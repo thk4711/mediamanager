@@ -1,0 +1,1 @@
+console=serial0,115200 console=tty2 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes quiet rootwait logo.nologo vt.global_cursor_default=0 splash plymouth.ignore-serial-consoles

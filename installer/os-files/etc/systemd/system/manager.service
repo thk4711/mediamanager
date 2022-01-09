@@ -1,0 +1,22 @@
+[Unit]
+Description=Media Manager
+After=network-online.target
+Wants=network-online.target
+After=rc-local.service
+#After=network.target 
+#After=rc-local.service
+#Before=basic.target
+#After=local-fs.target sysinit.target
+#DefaultDependencies=no
+
+[Service]
+User=root
+WorkingDirectory=/install/manager/
+ExecStart=/install/manager/manager.py
+Restart=always
+RestartSec=10
+StartLimitInterval=30
+StartLimitBurst=20
+
+[Install]
+WantedBy=multi-user.target
