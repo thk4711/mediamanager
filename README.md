@@ -25,7 +25,7 @@ The software consists 3 types of scripts:
 A device specific hardware library is needed to do certain adjustments like switching GPIO's calling certain commands when there is a switch to an other audio service. It has to be adapted, depending on the device you want to build. If this is not needed in your case it might be just a dummy which is not really doing anything.
 
 ### services
-Mediamanager rigt now comes with the following services. It is very easy to integrate more services. If you want to know more plese have a look at this document.
+Mediamanager rigt now comes with the following services. It is very easy to integrate more services. If you want to know more please have a look at this document.
 #### bluetooth-service
 This service is using the build in bluetooth module of the raspberry pi to recive audio data. You can pair with this service with every phone , tablet etc. The serice does support metadata and playback controls.
 #### generic-service
@@ -38,3 +38,16 @@ This service is using the shaiport software to enable AirPlay on the device. The
 This service is using spocon (which is using librespot-java) to implement the spotify connect service. The serice does support metadata and playback controls.
 #### usb-service
 This service is using an usb sound interface with i2s interface to get the sound into the device. It also requires an i2s switch between the usb interface and the raspberry on one side and the DAC board on the other side. If you want to use playback controls an additional Arduino bord is needed (please see this file for details).
+
+### frontends
+Mediamanager rigt now comes with the following services. It is very easy to integrate more frontends. If you want to know more please have a look at this document.
+#### display_16x2
+This frontend is using 2 16x2 charakter display connected with i2c to display the current volume the time the playback status and the active service.
+#### encoder
+This frontend is using a rotary encoder to change the volume. If the encoder includes a push button as well it can be configured what this butto does.
+#### extra-buttons
+This frontend is using free GPIO's to trigger certain playback controls.
+#### infrared
+This frontend is using lirc to trigger certain controls using an infrared remote control.
+#### pcf-buttons
+This frontend is using an pcf8575 i2c IO expander chip (16 additional GPIO#s) to trigger controls. This is especially usefull if you want to repurpose an old device and want to be able to use all the existing buttons.
