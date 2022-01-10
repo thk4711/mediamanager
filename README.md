@@ -1,6 +1,7 @@
 # mediamanager
 modular audio software supporting various audio sources and hardware add ons based on Raspberry Pi   
 
+---
 ### basic concept
 The goal of this project to create audio devices which feel less like a computer - more as an appliance like the ones you can by but with the fredom of an open source software behind. To operate it there is no need for an app on your phome or a touch screen. I started this project to convert an old TEAC fm tuner into a modern day audio device. I did want to preserve the aperance as much as possible. This also gave me simple access to a decent case for my project.
 
@@ -24,6 +25,7 @@ The software consists 3 types of scripts:
 #### hardware library
 A device specific hardware library is needed to do certain adjustments like switching GPIO's calling certain commands when there is a switch to an other audio service. It has to be adapted, depending on the device you want to build. If this is not needed in your case it might be just a dummy which is not really doing anything.
 
+---
 ### services
 Mediamanager rigt now comes with the following services. It is very easy to integrate more services. If you want to know more please have a look at this document.
 #### bluetooth-service
@@ -39,6 +41,7 @@ This service is using spocon (which is using librespot-java) to implement the sp
 #### usb-service
 This service is using an usb sound interface with i2s interface to get the sound into the device. It also requires an i2s switch between the usb interface and the raspberry on one side and the DAC board on the other side. If you want to use playback controls an additional Arduino bord is needed (please see this file for details).
 
+---
 ### frontends
 Mediamanager rigt now comes with the following services. It is very easy to integrate more frontends. If you want to know more please have a look at this document.
 #### display_16x2
