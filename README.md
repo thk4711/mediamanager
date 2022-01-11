@@ -53,4 +53,6 @@ This frontend is using free GPIO's to trigger certain playback controls.
 #### infrared
 This frontend is using lirc to trigger certain controls using an infrared remote control.
 #### pcf-buttons
-This frontend is using an pcf8575 i2c IO expander chip (16 additional GPIO#s) to trigger controls. This is especially usefull if you want to repurpose an old device and want to be able to use all the existing buttons.
+This frontend is using an PCF8575 i2c IO expander chip (16 additional GPIO's) to trigger controls. This is especially usefull if you want to repurpose an old device and want to be able to use all the existing buttons.
+#### qt-gui
+This frontend will display a QT based UI an a screen connected to a raspberry PI. It will display metadata and cover art. If the screen has touch capabilities it can be used for playback control and to switch sources.
