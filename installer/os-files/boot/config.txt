@@ -54,7 +54,7 @@ dtoverlay=gpio-ir,gpio_pin=26
 # Additional overlays and parameters are documented /boot/overlays/README
 
 # Enable audio (loads snd_bcm2835)
-#dtparam=audio=on
+dtparam=audio=on
 
 [pi4]
 # Enable DRM VC4 V3D driver on top of the dispmanx display stack
@@ -81,6 +81,6 @@ force_turbo=1
 #dtoverlay=iqaudio-dacplus
 #dtoverlay=hifiberry-dacplus,slave=on
 #dtoverlay=hifiberry-dac
-dtoverlay=hifiberry-amp
+#dtoverlay=hifiberry-amp
 
 #dtoverlay=pi3-disable-wifi

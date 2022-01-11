@@ -264,7 +264,7 @@ if len(sys.argv) > 1:
 execute_pre_cmd()
 install_debian_packages()
 install_pip_packages()
-install_manual_packages()
+# install_manual_packages()
 copy_files()
 execute_as_pi()
 fix_hostname()
