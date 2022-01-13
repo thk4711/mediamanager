@@ -29,6 +29,15 @@ def init():
     config = common.read_config(script_path + '/manager.conf')
     #pprint.pprint(config)
     #exit()
+    mixers = alsaaudio.mixers()
+    if config['global']['mixer'] in mixers:
+        print(f"Using mixer: {config['global']['mixer']}")
+    else:
+        print(f"Mixer {config['global']['mixer']} not found\nplease adjust manager conf.")
+        print('The following mixers are available:')
+        for mixer in mixers:
+            print(f'  -{mixer}')
+        exit(1)
     startport = config['global']['startport']
     process_config(config)
     #pprint.pprint(service_list)
@@ -100,12 +109,26 @@ def process_config(config):
 def start_processes():
     for item in ps_list:
         print('starting', item)
-        ps_list[item]['proc'] = subprocess.Popen(ps_list[item]['cmd'])
+        repeat_count = 0
+        running = False
+        while not running:
+            ps_list[item]['proc'] = subprocess.Popen(ps_list[item]['cmd'])
+            time.sleep(1)
+            poll = ps_list[item]['proc'].poll()
+            if poll != None:
+                repeat_count = repeat_count + 1
+            else:
+                running = True
+            if repeat_count == 3:
+                check_if_running(False)
+                print('faild to start', item)
+                print('please check configuration')
+                exit(1)
 
 #------------------------------------------------------------------------------#
 #        find out weather somthing is already running                          #
 #------------------------------------------------------------------------------#
-def check_if_running():
+def check_if_running(display_message=True):
     search = []
     for service in services:
         search.append(services[service]['start'])
@@ -118,7 +141,8 @@ def check_if_running():
         for item in search:
             if item in cmd_string:
                 kill = True
-                print('killing', cmd_string)
+                if display_message:
+                    print('killing', cmd_string)
         if kill:
             proc.kill()
 
@@ -136,6 +160,7 @@ def get_metadata():
     meta_data['playstatus']  = data['playstatus']
     meta_data['service'] = active_service
     meta_data['volume'] = volume
+    #pprint.pprint(meta_data)
     return(bytes(json.dumps(meta_data), 'utf-8'))
 
 #------------------------------------------------------------------------------#
@@ -144,18 +169,24 @@ def get_metadata():
 def get_data(action,service=None):
     if service == None:
         service = active_service
-    if common.check_port(services[service]['port'], services[service]['host']):
+    if common.check_port(services[service]['port'], services[service]['host']) == False:
         if action == 'metadata':
             data = {}
             data=b'{"track": " ", "album": " ", "artist": " ", "cover": "images/pause.png", "playstatus": false}'
-            return(data)
+            #return(data)
         else:
-            return('failed')
+            pass
+            #return('failed')
+    #else:
+    #    print('--------> unable to get metadata from port', services[service]['host'], services[service]['port'])
     url = 'http://' + services[service]['host'] + ':' + str(services[service]['port']) + '/action=' + action
     try:
         data = urllib.request.urlopen(url).read()
+        #if service == 'Airplay':
+        #    print(service, url, data)
     except:
         data = 'failed'
+        print(service, 'failed')
     return(data)
 
 #------------------------------------------------------------------------------#
@@ -176,8 +207,10 @@ def detect_active_service():
         for service in services:
             try:
                 result = get_data('getplaystatus',service).decode("utf-8")
+                #print('http_result for', service, result)
             except:
                 result = 'NO'
+                #print('no http_result for', service)
             if result == 'YES':
                 if services[service]['old_status'] == False:
                     if service != active_service:
@@ -208,7 +241,7 @@ def volume_watch():
     poll = select.poll()
     descriptors = mixer.polldescriptors()
     poll.register(descriptors[0][0])
-    print('starting monitor for alsa control ...')
+    #print('starting monitor for alsa control ...')
     while True:
         events = poll.poll()
         mixer.handleevents()

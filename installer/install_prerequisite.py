@@ -7,6 +7,7 @@ import pprint
 import sys
 import tty
 import termios
+from shutil import copyfile
 
 #------------------------------------------------------------------------------#
 #           execute command on os level                                        #
@@ -110,10 +111,13 @@ def execute_as_pi():
         for cmd in conf['DO-AS-PI']:
             if cmd.startswith('file'):
                 cmd = cmd.replace('file ','')
-                cmd =  '/bin/cp -p ' + script_path + '/os-files' + cmd + ' ' + cmd
+                source = script_path + '/os-files' + cmd
+                file_name = os.path.basename(source)
+                execute_os_command('/bin/cp -p ' + source + ' /tmp/')
+                cmd = '/bin/cp -p /tmp/' + file_name + ' ' + cmd
             filehandle.write('%s\n' % cmd)
     execute_os_command('chmod +777 /tmp/tmp_pi_cmd.sh')
-    #execute_os_command('su pi -c /tmp/tmp_pi_cmd.sh')
+    execute_os_command('su --login pi -c /tmp/tmp_pi_cmd.sh')
 
 #------------------------------------------------------------------------------#
 #           install debian packages                                            #
@@ -264,7 +268,7 @@ if len(sys.argv) > 1:
 execute_pre_cmd()
 install_debian_packages()
 install_pip_packages()
-# install_manual_packages()
+install_manual_packages()
 copy_files()
 execute_as_pi()
 fix_hostname()

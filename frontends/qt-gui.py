@@ -44,6 +44,7 @@ def init():
     global script_path
     script_path = pathlib.Path(__file__).parent.absolute()
     service_list = []
+    time.sleep(3)
     old_time_string = '00:00'
     meta_data['track']  = " "
     meta_data['album']  = " "
@@ -597,6 +598,6 @@ if __name__ == '__main__':
     init()
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    app.setOverrideCursor(Qt.BlankCursor)
+    #app.setOverrideCursor(Qt.BlankCursor)
     ex = Example()
     sys.exit(app.exec_())

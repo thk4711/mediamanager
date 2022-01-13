@@ -13,6 +13,8 @@ import argparse
 import alsaaudio
 import _thread
 import select
+import smbus
+import errno
 
 http_get_handler = None
 
@@ -167,9 +169,21 @@ def read_config(config_file):
             value = value.strip()
             if value == 'True':
                 value = True
-            elif value == False:
+            elif value == 'False':
                 value = False
             elif re.match(r'^([\d]+)$', value) :
                 value = int(value)
             conf[section][key] = value
     return(conf)
+
+#-----------------------------------------------------------------#
+#             check if i2c device is present                      #
+#-----------------------------------------------------------------#
+def check_smbus(device_address, bus_number = 1):
+    try:
+        bus = smbus.SMBus(bus_number)
+        bus.write_byte(device_address, 0)
+        print("Found {0}".format(hex(device_address)))
+    except:
+        print(f'unable to fine i2c device {hex(device_address)} on bus {bus_number}')
+        exit(1)

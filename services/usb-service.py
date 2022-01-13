@@ -19,21 +19,25 @@ def init():
     global port
     global i2cbus
     global i2caddress
+    global conf
     script_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_path)
+    conf = common.read_config(script_path + '/usb-service.conf')
     parser = argparse.ArgumentParser(description='generic service')
     parser.add_argument('-p', '--port', type=int, help='WEB server port', required=True)
     args = parser.parse_args()
     port = args.port
-    i2cbus = SMBus(1)
-    i2caddress = 0x05
+    if conf['general']['controls']:
+        i2cbus = SMBus(1)
+        i2caddress = int(conf['general']['i2caddress'])
 
 #------------------------------------------------------------------------------#
 #        get metadata from mpd                                                 #
 #------------------------------------------------------------------------------#
 def send_i2c(command):
-    cmds = {'prev': 2, 'next': 1, 'play': 3, 'pause': 4}
-    i2cbus.write_byte(i2caddress,cmds[command])
+    if conf['general']['controls']:
+        cmds = {'prev': 2, 'next': 1, 'play': 3, 'pause': 4}
+        i2cbus.write_byte(i2caddress,cmds[command])
 
 #------------------------------------------------------------------------------#
 #        get metadata from mpd                                                 #

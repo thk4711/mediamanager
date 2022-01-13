@@ -16,6 +16,9 @@ def init():
     global script_path
     script_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_path)
+    if os.system('systemctl is-active --quiet shairport-sync.service'):
+        print('shairport-sync service is not running - please check')
+        exit(1)
     data = {'track':'','album':'','artist':'','filetype':'','md5':''}
     j_string = json.dumps(data)
     file = open('/tmp/shairport-metadata.json', 'w')
@@ -94,6 +97,9 @@ def get_metadata():
     if meta_data['playstatus']:
         meta_data['cover']  = 'external_' + data['md5'] + '.' + data['filetype']
     else:
+        meta_data['track']  = ''
+        meta_data['album']  = ''
+        meta_data['artist'] = ''
         meta_data['cover']  = 'images/pause.png'
     return(bytes(json.dumps(meta_data), 'utf-8'))
 
@@ -111,17 +117,6 @@ def get_play_status(mode=False):
     if mode:
         return(bytes(ex_result, 'utf-8'))
     return(result)
-
-
-#------------------------------------------------------------------------------#
-#                  get play status                                             #
-#------------------------------------------------------------------------------#
-def get_active():
-    active_status = 'active'
-    if active_status == 'active':
-        return(True)
-    else:
-        return(False)
 
 #------------------------------------------------------------------------------#
 #         play next song                                                       #

@@ -3,78 +3,41 @@
 import time
 import json
 import os
+import sys
 import time
-import spotipy
-#import spotipy.util as util
 import urllib
 import socket
 import argparse
 import requests
 import lib.common as common
-import _thread
+
+base_url = 'http://localhost:24879/player/'
 
 #------------------------------------------------------------------------------#
 #                         do something on startup                              #
 #------------------------------------------------------------------------------#
 def init():
-    global username
     global port
-    global cache_file
-    global scope
-    global hostname
-    global d_id
-    d_id = None
-    hostname = socket.gethostname()
+    check_port()
     script_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_path)
-    scope = 'user-modify-playback-state,user-read-currently-playing,user-read-playback-state'
-    get_token()
-    d_id = -1
-    parser = argparse.ArgumentParser(description='media helper')
+    parser = argparse.ArgumentParser(description='media manager spotify connect service')
     parser.add_argument('-p', '--port', type=int, help='WEB server port', required=True)
     args = parser.parse_args()
     port = args.port
 
 #------------------------------------------------------------------------------#
-#                         get a token from spotify                             #
+#                         check if librespot-java is running                   #
 #------------------------------------------------------------------------------#
-def get_token():
-    global spotifyObject
-    global valid_token
-    try:
-        path = 'http://localhost:24879/token/' + scope
-        ret = requests.post(url = path)
-        data = ret.json()
-        token = data['token']
-        valid_token = True
-        spotifyObject = spotipy.Spotify(auth=token)
-    except:
-        #print("Error: cannot get token")
-        valid_token = False
-
-#------------------------------------------------------------------------------#
-#           read config file                                                   #
-#------------------------------------------------------------------------------#
-def read_config(config_file):
-    if not os.path.isfile(config_file):
-        print('ERROR config file', config_file, 'does not exist')
-        exit(1)
-    conf = {}
-    with open(config_file) as f:
-        content = f.readlines()
-    for line in content:
-        if line.startswith("#"):
-            continue
-        line = line.strip()
-        key,value = line.split('=',2)
-        key   = key.strip()
-        value = value.strip()
-        if value.lower() == 'no':
-            value = False
-        elif value.lower() == 'yes':
-            value = True
-        conf[key] = value
-    return(conf)
+def check_port():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = sock.connect_ex(('localhost', 24879))
+    if result == 0:
+        sock.close()
+        return
+    print("Please check if SpoCon is configured correctly and running", file = sys.stderr )
+    sock.close()
+    exit(1)
 
 #------------------------------------------------------------------------------#
 #                  get metadata from spotify                                   #
@@ -83,7 +46,7 @@ def get_metadata():
     meta_data = {}
     global current_cover
     try:
-        current_track, success = talk_to_spotify('current_track')
+        current_track = get_player()
         album = current_track['item']['album']
         current_cover = album['images'][0]['url']
         tmp_cover = current_cover
@@ -115,94 +78,40 @@ def get_play_status(mode=False):
     ret_val = False
     ret_str = 'NO'
     try:
-        current_track, success = talk_to_spotify('current_track')
+        current_track = get_player()
         playing = current_track['is_playing']
     except:
-        playing = False
-    if playing:
-        ret_val = get_active()
-        if ret_val:
-            ret_str = 'YES'
+        pass
+    if playing == True:
+        try:
+            path = 'http://localhost:24879/player/current/'
+            ret = requests.post(url = path)
+            data = ret.json()
+            if 'current' in data:
+                ret_str = 'YES'
+                ret_val = True
+                get_player()
+        except:
+            pass
     if mode:
         return(bytes(ret_str, 'utf-8'))
     return(ret_val)
 
 #------------------------------------------------------------------------------#
-#                  get active status                                           #
+#                  get whats currently playing                                 #
 #------------------------------------------------------------------------------#
-def get_active():
-    active = False
-    try:
-        devices, success = talk_to_spotify('devices')
-        for device in devices['devices']:
-            if hostname.upper() in device['name'].upper():
-                if device['is_active']:
-                    active = True
-    except:
-        active = False
-    return(active)
+def get_current():
+    path = 'http://localhost:24879/player/current/'
+    ret = requests.post(url = path)
+    return ret.json()
 
 #------------------------------------------------------------------------------#
-#                  get device_id                                               #
+#                  get player data from API                                    #
 #------------------------------------------------------------------------------#
-def get_device_id():
-    global meta_data
-    global d_id
-    sleep_time = 1
-    while True:
-        try:
-            devices, success = talk_to_spotify('devices')
-            for device in devices['devices']:
-                #print(device)
-                if hostname in device['name']:
-                    d_id = device['id']
-                    #print('Device ID', d_id)
-                    sleep_time = 20
-        except:
-            d_id = -1
-            #print("unable to get device ID")
-        time.sleep(sleep_time)
-
-#------------------------------------------------------------------------------#
-#                  make a call to spotify with retry                           #
-#------------------------------------------------------------------------------#
-def talk_to_spotify(item):
-    success = False
-    result = None
-    try:
-        if item == 'devices':
-            result = spotifyObject.devices()
-        elif item == 'current_track':
-            result = spotifyObject.current_user_playing_track()
-        elif item == 'next':
-            result = spotifyObject.next_track(device_id=d_id)
-        elif item == 'prev':
-            result = spotifyObject.previous_track(device_id=d_id)
-        elif item == 'play':
-            result = spotifyObject.start_playback(device_id=d_id)
-        elif item == 'pause':
-            result = spotifyObject.pause_playback(device_id=d_id)
-        success = True
-    except:
-        get_token()
-        try:
-            if item == 'devices':
-                result = spotifyObject.devices()
-            elif item == 'current_track':
-                result = spotifyObject.current_user_playing_track()
-            elif item == 'next':
-                result = spotifyObject.next_track(device_id=d_id)
-            elif item == 'prev':
-                result = spotifyObject.previous_track(device_id=d_id)
-            elif item == 'play':
-                result = spotifyObject.start_playback(device_id=d_id)
-            elif item == 'pause':
-                result = spotifyObject.pause_playback(device_id=d_id)
-            success = True
-        except:
-            pass
-            #print('unable to talk to spotify')
-    return(result, success)
+def get_player():
+    path = 'http://localhost:24879/web-api/v1/me/player'
+    ret = requests.get(url = path)
+    return ret.json()
 
 #------------------------------------------------------------------------------#
 #          read cover image fom spotify connect web                            #
@@ -216,25 +125,25 @@ def read_cover_image():
 #         play next song                                                       #
 #------------------------------------------------------------------------------#
 def next():
-    talk_to_spotify('next')
+    requests.post(url = base_url + 'next')
 
 #------------------------------------------------------------------------------#
 #         play previuous song                                                  #
 #------------------------------------------------------------------------------#
 def prev():
-    talk_to_spotify('prev')
+    requests.post(url = base_url + 'prev')
 
 #------------------------------------------------------------------------------#
 #         start playing                                                        #
 #------------------------------------------------------------------------------#
 def play():
-    talk_to_spotify('play')
+    requests.post(url = base_url + 'resume')
 
 #------------------------------------------------------------------------------#
 #         stop playing                                                         #
 #------------------------------------------------------------------------------#
 def pause():
-    talk_to_spotify('pause')
+    requests.post(url = base_url + 'pause')
 
 #------------------------------------------------------------------------------#
 #                       handle http get request                                #
@@ -260,18 +169,10 @@ def respond_to_get_request(data):
         return(get_play_status(True))
     return(bytes('OK', 'utf-8'))
 
-#--------- start thread for watching volume change ----------------------------#
-def run_get_device_id():
-    try:
-        _thread.start_new_thread( get_device_id, () )
-    except:
-        print("Error: unable to start thread get_device_id")
-
 #------------------------------------------------------------------------------#
 #           main program                                                       #
 #------------------------------------------------------------------------------#
 init()
-run_get_device_id()
 common.http_get_handler = respond_to_get_request
 common.run_http(port)
 while True:

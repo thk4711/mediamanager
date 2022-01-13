@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import re, sys
 import base64
 import json
@@ -20,11 +20,14 @@ old_meta_data['artist']   = ''
 old_meta_data['filetype'] = ''
 old_meta_data['md5']      = ''
 
+#------------------------------------------------------------------------------#
+#                       find out item type                                     #
+#------------------------------------------------------------------------------#
 def start_item(line):
     regex = r"<item><type>(([A-Fa-f0-9]{2}){4})</type><code>(([A-Fa-f0-9]{2}){4})</code><length>(\d*)</length>"
     matches = re.findall(regex, line)
-    typ = matches[0][0].decode('hex')
-    code = matches[0][2].decode('hex')
+    typ = bytes.fromhex(matches[0][0]).decode()
+    code = bytes.fromhex(matches[0][2]).decode()
     length = int(matches[0][4])
     return (typ, code, length)
 
@@ -43,21 +46,23 @@ def start_data(line):
 #------------------------------------------------------------------------------#
 #        decode data                                                           #
 #------------------------------------------------------------------------------#
-def read_data(line, length):
-    b64size = 4*((length+2)/3);
+def read_data(line, length, decode):
+    data = ""
     try:
-        data = base64.b64decode(line[:b64size])
-    except TypeError:
-        data = ""
+        parts = line.split('</data>')
+        if decode:
+            data = base64.b64decode(parts[0]).decode()
+        else:
+            data = base64.b64decode(parts[0])
+    except:
         pass
     return data
 
 #------------------------------------------------------------------------------#
-#        find image type                                                            #
+#                     find image type                                          #
 #------------------------------------------------------------------------------#
 def guessImageMime(magic):
-
-    if magic.startswith('\xff\xd8'):
+    if magic.startswith(b'\xff\xd8'):
         return 'jpeg'
     elif magic.startswith('\x89PNG\r\n\x1a\r'):
         return 'png'
@@ -76,11 +81,13 @@ def update_json():
             old_meta_data[item] = meta_data[item]
     if changed:
         j_string = json.dumps(meta_data)
-        #pprint.pprint(meta_data)
         file = open('/tmp/shairport-metadata.json', 'w')
         file.write(j_string)
         file.close()
 
+#------------------------------------------------------------------------------#
+#                           main script part                                   #
+#------------------------------------------------------------------------------#
 if __name__ == "__main__":
     metadata = {}
     fi = sys.stdin
@@ -98,8 +105,10 @@ if __name__ == "__main__":
             r = start_data(sys.stdin.readline())
             if (r == -1):
                 continue
-            data = read_data(sys.stdin.readline(), length)
-
+            if (typ == "ssnc" and code == "PICT"):
+                data = read_data(sys.stdin.readline(), length, False)
+            else:
+                data = read_data(sys.stdin.readline(), length, True)
         # Everything read
         if (typ == "core"):
             if (code == "asal"):
@@ -116,8 +125,8 @@ if __name__ == "__main__":
             if (len(data) != 0):
                 file_type = guessImageMime(data)
                 filename = '/tmp/shairport-image.' + file_type
-                file = open(filename, 'w')
-                file.write(data)
+                file = open(filename, 'wb')
+                file. write(data)
                 file.close()
                 meta_data['filetype'] = file_type
                 meta_data['md5'] = hashlib.md5(data).hexdigest()

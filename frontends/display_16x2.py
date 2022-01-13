@@ -35,6 +35,7 @@ def init():
     old_meta_data['volume'] = 1
     script_path = str(pathlib.Path(__file__).parent.absolute())
     config = common.read_config(script_path + '/display_16x2.conf')
+    common.check_smbus(int(config['general']['display_address'],16))
     lcd = lcddriver.lcd(int(config['general']['display_address'], 16))
     display_width = int(config['general']['display_width'])
     lcd.lcd_clear()

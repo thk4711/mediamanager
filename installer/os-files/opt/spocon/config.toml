@@ -1,7 +1,7 @@
 ### Device type (COMPUTER, TABLET, SMARTPHONE, SPEAKER, TV, AVR, STB, AUDIO_DONGLE, GAME_CONSOLE, CAST_VIDEO, CAST_AUDIO, AUTOMOBILE, WEARABLE, UNKNOWN_SPOTIFY, CAR_THING, UNKNOWN) ###
-deviceType = "SPEAKER"
+deviceType = "COMPUTER"
 ### Device name ###
-deviceName = "qtplayer"
+deviceName = "radiodev"
 ### Device ID (40 chars, leave empty for random)  ###
 deviceId = ""
 ### Log level (OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL) ###
@@ -19,14 +19,14 @@ preferredLocale = "en"
 ### Authentication ###
 [auth]
 	# Credentials file (JSON)
-	credentialsFile = ""
+	credentialsFile = "credentials.json"
 	# Spotify password (USER_PASS only)
 	password = ""
-	# Spotify authentication blob (BLOB only)
+	# Spotify authentication blob Base64-encoded (BLOB only)
 	blob = ""
 	# Whether to store reusable credentials on disk (not a plain password)
 	storeCredentials = false
-	# Strategy (USER_PASS, ZEROCONF, BLOB, FACEBOOK)
+	# Strategy (USER_PASS, ZEROCONF, BLOB, FACEBOOK, STORED)
 	strategy = "ZEROCONF"
 	# Spotify username (BLOB, USER_PASS only)
 	username = ""
@@ -35,6 +35,11 @@ preferredLocale = "en"
 [preload]
 	# Preload enabled
 	enabled = true
+
+### Network ###
+[network]
+	# If ping isn't received within this amount of seconds, reconnect
+	connectionTimeout = 10
 
 ### Proxy ###
 [proxy]
@@ -48,6 +53,8 @@ preferredLocale = "en"
 	auth = false
 	# The proxy type (HTTP, SOCKS)
 	type = "HTTP"
+	# Connect to proxy using SSL (HTTP only)
+	ssl = false
 	# Whether the proxy is enabled
 	enabled = false
 	# Basic auth username
@@ -61,6 +68,27 @@ preferredLocale = "en"
 	interfaces = ""
 	# Listen on this TCP port (`-1` for random)
 	listenPort = -1
+
+### Shell ###
+[shell]
+	onTrackSeeked = ""
+	onStartedLoading = ""
+	onConnectionDropped = ""
+	onMetadataAvailable = ""
+	onTrackChanged = ""
+	onPanicState = ""
+	onFinishedLoading = ""
+	# Shell events enabled
+	enabled = false
+	onPlaybackResumed = ""
+	onConnectionEstablished = ""
+	onPlaybackEnded = ""
+	onContextChanged = ""
+	# Execute the command with `bash -c`
+	executeWithBash = false
+	onPlaybackPaused = ""
+	onInactiveSession = ""
+	onVolumeChanged = ""
 
 ### Time correction ###
 [time]
@@ -79,9 +107,11 @@ preferredLocale = "en"
 ### Player ###
 [player]
 	# Whether to apply the Spotify loudness normalisation
-	enableNormalisation = false
+	enableNormalisation = true
 	# Initial volume (0-65536)
 	initialVolume = 65536
+	# Whether librespot-java should ignore volume events, sink volume is set to the max
+	bypassSinkVolume = false
 	# Release mixer line after set delay (in seconds)
 	releaseLineDelay = 20
 	# Normalisation pregain in decibels (loud at +6, normal at +3, quiet at -5)
@@ -92,12 +122,16 @@ preferredLocale = "en"
 	autoplayEnabled = true
 	# Preferred audio quality (NORMAL, HIGH, VERY_HIGH)
 	preferredAudioQuality = "VORBIS_320"
-	# Audio output device (MIXER, PIPE, STDOUT)
+	# Where librespot-java should search for local files
+	localFilesPath = ""
+	# Audio output device (MIXER, PIPE, STDOUT, CUSTOM)
 	output = "MIXER"
-	# Whether the playback should be stopped when the current chunk cannot be downloaded
-	stopPlaybackOnChunkError = false
 	# Crossfade overlap time (in milliseconds)
 	crossfadeDuration = 0
+	# Audio output Java class name
+	outputClass = ""
+	# Whether the player should retry fetching a chuck if it fails
+	retryOnChunkError = true
 	# Mixer/backend search keywords (semicolon separated)
 	mixerSearchKeywords = ""
 	# Output raw (signed) PCM to this file (`player.output` must be PIPE)
@@ -106,3 +140,4 @@ preferredLocale = "en"
 	logAvailableMixers = true
 	# Number of volume notches
 	volumeSteps = 64
+
