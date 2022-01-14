@@ -3,7 +3,6 @@
 import os
 import re
 import subprocess
-import pprint
 import sys
 import tty
 import termios
@@ -116,14 +115,25 @@ def execute_as_pi():
                 execute_os_command('/bin/cp -p ' + source + ' /tmp/')
                 cmd = '/bin/cp -p /tmp/' + file_name + ' ' + cmd
             filehandle.write('%s\n' % cmd)
+        filehandle.write('echo Done executing as pi\n')
     execute_os_command('chmod +777 /tmp/tmp_pi_cmd.sh')
-    execute_os_command('su --login pi -c /tmp/tmp_pi_cmd.sh')
+    execute_os_command('ssh-keygen -b 2048 -t rsa -f /tmp/sshkey -q -N ""')
+    execute_os_command('mkdir -p /home/pi/.ssh')
+    execute_os_command('chown pi:pi /home/pi/.ssh/')
+    execute_os_command('cp /tmp/sshkey.pub /home/pi/.ssh/authorized_keys')
+    execute_os_command('chown pi:pi /home/pi/.ssh/authorized_keys')
+    execute_os_command('chmod 700 /home/pi/.ssh/')
+    execute_os_command('chmod 600 /home/pi/.ssh/authorized_keys')
+    execute_os_command('ssh -i /tmp/sshkey pi@localhost /tmp/tmp_pi_cmd.sh')
+    execute_os_command('rm /home/pi/.ssh/authorized_keys')
+    execute_os_command('rm /tmp/sshkey*')
+    execute_os_command('rm /tmp/tmp_pi_cmd.sh')
 
 #------------------------------------------------------------------------------#
 #           install debian packages                                            #
 #------------------------------------------------------------------------------#
 def install_debian_packages():
-    cmd_string = '/usr/bin/apt-get -y install '
+    cmd_string = '/usr/bin/apt-get -y install --no-install-recommends'
     for package in conf['DEBIAN-PACKAGES']:
         cmd_string = cmd_string + package + ' '
     execute_os_command(cmd_string)
@@ -264,14 +274,14 @@ if len(sys.argv) > 1:
         get_files()
         exit(0)
 
-#pprint.pprint(conf)
 execute_pre_cmd()
 install_debian_packages()
 install_pip_packages()
 install_manual_packages()
 copy_files()
-execute_as_pi()
 fix_hostname()
 execute_post_cmd()
-print('OK')
+execute_as_pi()
+print('Setup of mediamanager done :-)')
+print('Please reboot now')
 #select_sound_card()
