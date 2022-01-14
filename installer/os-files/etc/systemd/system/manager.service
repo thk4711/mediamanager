@@ -3,7 +3,7 @@ Description=Media Manager
 After=network-online.target
 Wants=network-online.target
 After=rc-local.service
-#After=network.target 
+#After=network.target
 #After=rc-local.service
 #Before=basic.target
 #After=local-fs.target sysinit.target
@@ -11,8 +11,8 @@ After=rc-local.service
 
 [Service]
 User=root
-WorkingDirectory=/install/manager/
-ExecStart=/install/manager/manager.py
+WorkingDirectory=/opt/mediamanager/
+ExecStart=/opt/mediamanager/manager.py
 Restart=always
 RestartSec=10
 StartLimitInterval=30
