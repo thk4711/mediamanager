@@ -133,7 +133,7 @@ def execute_as_pi():
 #           install debian packages                                            #
 #------------------------------------------------------------------------------#
 def install_debian_packages():
-    cmd_string = '/usr/bin/apt-get -y install --no-install-recommends'
+    cmd_string = '/usr/bin/apt-get -y install --no-install-recommends '
     for package in conf['DEBIAN-PACKAGES']:
         cmd_string = cmd_string + package + ' '
     execute_os_command(cmd_string)
