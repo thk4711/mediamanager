@@ -2,7 +2,7 @@
 echo '#--------------------------------#'
 echo '#                                #'
 echo '# Starting media manager setup   #'
-echo '# This will take up to 25min.   #'
+echo '# This will take up to 25min.    #'
 echo '#                                #'
 echo '#--------------------------------#'
 sleep 5
