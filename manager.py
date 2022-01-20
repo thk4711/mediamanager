@@ -57,11 +57,13 @@ def init():
 #------------------------------------------------------------------------------#
 def process_config(config):
     global services
+    global frontends
     global service_list
     global ps_list
     global service_order
     ps_list = {}
     services = {}
+    frontends = {}
     service_list = {}
     service_order = []
     count = 1
@@ -93,11 +95,17 @@ def process_config(config):
                 service_order.append(service)
             if config[section]['type'] == 'frontend' and config[section]['enabled'] == True:
                 frontend = config[section]['name']
+                frontends[frontend] = {}
+                frontends[frontend]['port'] = startport + count
+                count = count + 1
                 cmd = ['./frontends/' + config[section]['start']]
                 cmd.append('-p')
                 cmd.append(str(startport))
                 cmd.append('-m')
                 cmd.append(config['global']['mixer'])
+                cmd.append('-c')
+                cmd.append(str(frontends[frontend]['port']))
+                print(' '.join(cmd))
                 ps_item = {}
                 ps_item['cmd'] = cmd
                 ps_item['type'] = 'frontend'
@@ -113,7 +121,7 @@ def start_processes():
         running = False
         while not running:
             ps_list[item]['proc'] = subprocess.Popen(ps_list[item]['cmd'])
-            time.sleep(1)
+            time.sleep(0.3)
             poll = ps_list[item]['proc'].poll()
             if poll != None:
                 repeat_count = repeat_count + 1

@@ -44,6 +44,7 @@ def init_frontend():
     parser.add_argument('-p', '--port', type=int, help='manager port', required=True)
     parser.add_argument('-ho', '--host', type=str, help='manager host', required=False, default='localhost')
     parser.add_argument('-m', '--mixer', type=str, help='volume mixer name', required=True)
+    parser.add_argument('-c', '--configport', type=int, help='management port of frontend', required=True)
     args = parser.parse_args()
     mixer_name = args.mixer
     mixer = alsaaudio.Mixer(mixer_name)
@@ -140,8 +141,11 @@ def split_path(path):
     data = {}
     elements = path.split('/')
     for element in elements:
-        key, value = element.split('=',2)
-        data[key] = value
+        try:
+            key, value = element.split('=',2)
+            data[key] = value
+        except:
+            pass
     return(data)
 
 #------------------------------------------------------------------------------#
@@ -177,6 +181,20 @@ def read_config(config_file):
     return(conf)
 
 #-----------------------------------------------------------------#
+#             extract hardware config from config                 #
+#-----------------------------------------------------------------#
+def get_hardware_conf(conf):
+    hardware = {}
+    if 'hardware' in conf:
+        for item in conf['hardware']:
+            type , number_string = conf['hardware'][item].split(':',1)
+            number = int(number_string)
+            if type not in hardware:
+                hardware[type]={}
+            hardware[type][item] = number
+    return hardware
+
+#-----------------------------------------------------------------#
 #             check if i2c device is present                      #
 #-----------------------------------------------------------------#
 def check_smbus(device_address, bus_number = 1):
@@ -187,3 +205,27 @@ def check_smbus(device_address, bus_number = 1):
     except:
         print(f'unable to fine i2c device {hex(device_address)} on bus {bus_number}')
         exit(1)
+
+#-----------------------------------------------------------------#
+#             read GPIO usage of kernel modules                   #
+#-----------------------------------------------------------------#
+def get_kernel_gpio_usage():
+    gpios={}
+    file = open('/sys/kernel/debug/gpio', 'r')
+    lines = file.readlines()
+    flag = False
+    for index, line in enumerate(lines):
+        line = " ".join(line.split())
+        if line.startswith('gpiochip'):
+            if line.startswith('gpiochip0'):
+                flag = True
+            else:
+                flag = False
+        if line.startswith('gpio-') and flag:
+            parts = line.split()
+            num = int(parts[0].replace('gpio-',''))
+            result = re.search('\( \|(.*) \)', line)
+            usage = result.group(1)
+            gpios[usage] = num
+    file.close()
+    return(gpios)

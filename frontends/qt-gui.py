@@ -13,7 +13,6 @@ import alsaaudio
 import select
 import _thread
 import os
-import argparse
 from datetime import datetime
 import lib.common as common
 import pathlib
@@ -60,11 +59,7 @@ def init():
     old_meta_data['playstatus']  = True
     old_meta_data['service']  = ''
     old_meta_data['volume'] = 1
-    parser = argparse.ArgumentParser(description='media helper')
-    parser.add_argument('-p', '--port', type=int, help='manager port', required=True)
-    parser.add_argument('-ho', '--host', type=str, help='manager host', required=False, default='localhost')
-    parser.add_argument('-m', '--mixer', type=str, help='volume mixer name', required=True)
-    args = parser.parse_args()
+    args = common.init_frontend()
     port = args.port
     host = args.host
     mixer_name = args.mixer
@@ -107,13 +102,14 @@ def control_watch():
             value = alsa_val[0]
             setvol = value
 
-#--------- start thread for watching volume change ----------------------------#
+#-------------- start thread for watching volume change -----------------------#
 def run_control_watch():
     try:
         _thread.start_new_thread( control_watch, () )
     except:
         print("Error: unable to start thread control watch")
 
+#-------------------- define some GUI elements --------------------------------#
 
 class MyPushButton(QPushButton):
     pass
@@ -159,18 +155,24 @@ class MyQWidget(QWidget):
 class MyQSvgWidget(QtSvg.QSvgWidget):
     pass
 
-class Example(QWidget):
+#------------------------------------------------------------------------------#
+#                       QT based UI                                            #
+#------------------------------------------------------------------------------#
+
+class QTGui(QWidget):
 
     def __init__(self):
         super().__init__()
         self.initUI()
+
+    #---------------------- init the UI ---------------------------------------#
 
     def initUI(self):
         palette = self.palette()
         role = self.backgroundRole()
         palette.setColor(role, QColor('black'))
         self.setPalette(palette)
-        self.setGeometry(1280, 800, 1280, 800)
+        #self.setGeometry(1280, 800, 1280, 800)
         self.setMouseTracking(True)
         self.mouseMoveEvent=lambda event:hide_and_show_stuff('switch', 'cursor', 2)
         pixmap_1 = QPixmap('images/pause.png').scaled(400, 400, Qt.KeepAspectRatio)
@@ -179,7 +181,7 @@ class Example(QWidget):
         QFontDatabase.addApplicationFont("fonts/socialicious.ttf")
         QFontDatabase.addApplicationFont("fonts/CODE_Light.otf")
 
-    #---------------------- switch active service ---------------------------------#
+        #------------------ switch active service -----------------------------#
 
         def exchange_pixmap(item, new_image, is_pixmap = False):
             self.widget = item
@@ -191,6 +193,8 @@ class Example(QWidget):
             self.anim.setEndValue(0.0)
             self.anim.finished.connect(lambda: exchange_pixmap_2(item, new_image, is_pixmap))
             self.anim.start()
+
+        #----------------- exchange a pixmap at an gui element ----------------#
 
         def exchange_pixmap_2(item, new_image, is_pixmap):
             self.widget = item
@@ -218,86 +222,63 @@ class Example(QWidget):
             self.anim.setEndValue(1.0)
             self.anim.start()
 
-        def exchange_artist_text(item, new_text):
+        #--------------- fade out old metadata text ---------------------------#
+
+        def exchange_metadata_text(item, type, new_text):
             self.widget = item
             self.effect = QGraphicsOpacityEffect()
             self.widget.setGraphicsEffect(self.effect)
-            self.anim1 = QPropertyAnimation(self.effect, b"opacity")
-            self.anim1.setDuration(500)
-            self.anim1.setStartValue(1.0)
-            self.anim1.setEndValue(0.0)
-            self.anim1.finished.connect(lambda: exchange_artist_text_2(item, new_text))
-            self.anim1.start()
+            gui_amimations[type] = QPropertyAnimation(self.effect, b"opacity")
+            gui_amimations[type].setDuration(500)
+            gui_amimations[type].setStartValue(1.0)
+            gui_amimations[type].setEndValue(0.0)
+            gui_amimations[type].finished.connect(lambda: exchange_metadata_text_2(item, type, new_text))
+            gui_amimations[type].start()
 
-        def exchange_artist_text_2(item, new_text):
+        #--------------- fade in new metadata text ----------------------------#
+
+        def exchange_metadata_text_2(item, type, new_text):
             self.widget = item
             self.widget.setText(new_text)
             self.effect = QGraphicsOpacityEffect()
             self.widget.setGraphicsEffect(self.effect)
-            self.anim1 = QPropertyAnimation(self.effect, b"opacity")
-            self.anim1.setDuration(500)
-            self.anim1.setStartValue(0.0)
-            self.anim1.setEndValue(1.0)
-            self.anim1.start()
+            gui_amimations[type] = QPropertyAnimation(self.effect, b"opacity")
+            gui_amimations[type].setDuration(500)
+            gui_amimations[type].setStartValue(0.0)
+            gui_amimations[type].setEndValue(1.0)
+            gui_amimations[type].start()
 
-        def exchange_album_text(item, new_text):
-            self.widget = item
-            self.effect = QGraphicsOpacityEffect()
-            self.widget.setGraphicsEffect(self.effect)
-            self.anim2 = QPropertyAnimation(self.effect, b"opacity")
-            self.anim2.setDuration(500)
-            self.anim2.setStartValue(1.0)
-            self.anim2.setEndValue(0.0)
-            self.anim2.finished.connect(lambda: exchange_album_text_2(item, new_text))
-            self.anim2.start()
-
-        def exchange_album_text_2(item, new_text):
-            self.widget = item
-            self.widget.setText(new_text)
-            self.effect = QGraphicsOpacityEffect()
-            self.widget.setGraphicsEffect(self.effect)
-            self.anim2 = QPropertyAnimation(self.effect, b"opacity")
-            self.anim2.setDuration(500)
-            self.anim2.setStartValue(0.0)
-            self.anim2.setEndValue(1.0)
-            self.anim2.start()
-
-        def exchange_title_text(item, new_text):
-            self.widget = item
-            self.effect = QGraphicsOpacityEffect()
-            self.widget.setGraphicsEffect(self.effect)
-            self.anim3 = QPropertyAnimation(self.effect, b"opacity")
-            self.anim3.setDuration(500)
-            self.anim3.setStartValue(1.0)
-            self.anim3.setEndValue(0.0)
-            self.anim3.finished.connect(lambda: exchange_title_text_2(item, new_text))
-            self.anim3.start()
-
-        def exchange_title_text_2(item, new_text):
-            self.widget = item
-            self.widget.setText(new_text)
-            self.effect = QGraphicsOpacityEffect()
-            self.widget.setGraphicsEffect(self.effect)
-            self.anim3 = QPropertyAnimation(self.effect, b"opacity")
-            self.anim3.setDuration(500)
-            self.anim3.setStartValue(0.0)
-            self.anim3.setEndValue(1.0)
-            self.anim3.start()
+        #------------ handle play/pause button --------------------------------#
 
         def play_pause():
-            global play_status
-            if play_status:
-                gui_objects['playpause']['object'].setText(u'\uF3AA')
-                play_status = False
-                common.get_data(host,port,'pause')
-            else:
+            if meta_data['playstatus']:
                 gui_objects['playpause']['object'].setText(u'\uF3A7')
                 play_status = True
-                common.get_data(host,port,'play')
+            else:
+                gui_objects['playpause']['object'].setText(u'\uF3AA')
+                play_status = False
+                if service_list[meta_data['service']]['type'] == 'font':
+                    symbol = service_list[meta_data['service']]['symbol'].encode().decode('unicode-escape')
+                    cover = create_pixmap_from_font(400, 400, symbol, 250)
+                    exchange_pixmap(gui_objects['cover']['object'], cover, True)
+                elif service_list[meta_data['service']]['type'] == 'svg':
+                    cover = QIcon('frontends/icons/' + service_list[meta_data['service']]['icon1']).pixmap(QSize(350, 350))
+                    exchange_pixmap(gui_objects['cover']['object'], cover, True)
+
+        #---------------------- update time -----------------------------------#
+
+        def update_time():
+            global old_time_string
+            now = datetime.now()
+            time_string = now.strftime("%H:%M")
+            if old_time_string != time_string:
+                time_label.setText(time_string)
+                old_time_string = time_string
+
+        #------------------ update metadata -----------------------------------#
 
         def update_metadata():
             global update_count
-            global old_time_string
             update_count = update_count + 1
             get_metadata()
             flag = False
@@ -307,44 +288,27 @@ class Example(QWidget):
                 switch_active_service(meta_data['service'])
                 flag = True
                 old_meta_data['service'] = meta_data['service']
-            if old_meta_data['track'] != meta_data['track']:
-                #title_label.setText(meta_data['track'])
-                exchange_title_text(gui_objects['title_label']['object'],meta_data['track'])
-                old_meta_data['track'] = meta_data['track']
-            if old_meta_data['album'] != meta_data['album']:
-                #album_label.setText(meta_data['album'])
-                exchange_album_text(gui_objects['album_label']['object'],meta_data['album'])
-                old_meta_data['album'] = meta_data['album']
-            if old_meta_data['artist'] != meta_data['artist']:
-                #artist_label.setText(meta_data['artist'])
-                exchange_artist_text(gui_objects['artist_label']['object'],meta_data['artist'])
-                old_meta_data['artist'] = meta_data['artist']
+
+            for item in ['track', 'album', 'artist']:
+                if old_meta_data[item] != meta_data[item]:
+                    exchange_metadata_text(gui_objects[item + '_label']['object'], item, meta_data[item])
+                    old_meta_data[item] = meta_data[item]
+
             if old_meta_data['cover'] != meta_data['cover']:
                 if meta_data['playstatus']:
                     exchange_pixmap(gui_objects['cover']['object'], meta_data['cover'])
                 old_meta_data['cover'] = meta_data['cover']
+
             if old_meta_data['volume'] != meta_data['volume']:
                 old_meta_data['volume'] = meta_data['volume']
+
             if old_meta_data['playstatus'] != meta_data['playstatus'] or flag:
-                if meta_data['playstatus']:
-                    gui_objects['playpause']['object'].setText(u'\uF3A7')
-                    play_status = True
-                else:
-                    gui_objects['playpause']['object'].setText(u'\uF3AA')
-                    play_status = False
-                    if service_list[meta_data['service']]['type'] == 'font':
-                        symbol = service_list[meta_data['service']]['symbol'].encode().decode('unicode-escape')
-                        cover = create_pixmap_from_font(400, 400, symbol, 250)
-                        exchange_pixmap(gui_objects['cover']['object'], cover, True)
-                    elif service_list[meta_data['service']]['type'] == 'svg':
-                        cover = QIcon('frontends/icons/' + service_list[meta_data['service']]['icon1']).pixmap(QSize(350, 350))
-                        exchange_pixmap(gui_objects['cover']['object'], cover, True)
+                play_pause()
                 old_meta_data['playstatus'] = meta_data['playstatus']
-            now = datetime.now()
-            time_string = now.strftime("%H:%M")
-            if old_time_string != time_string:
-                time_label.setText(time_string)
-                old_time_string = time_string
+
+            update_time()
+
+        #--------- create a pixmap from font character ------------------------#
 
         def create_pixmap_from_font(size_x, size_y, text, font_size):
             pixmap = QPixmap(size_x, size_y)
@@ -357,6 +321,8 @@ class Example(QWidget):
             painter.end()
             return(pixmap)
 
+        #---------- display volume if changed  --------------------------------#
+
         def update_volume():
             global oldvol
             hide_and_show_stuff('check','volume')
@@ -366,6 +332,7 @@ class Example(QWidget):
                 hide_and_show_stuff('switch','volume')
                 gui_objects['vol_label']['object'].setText(str(setvol))
                 oldvol = setvol
+        #-----------  hide or show gui elements based on timer  ---------------#
 
         def hide_and_show_stuff(action, group=None, timeout=2.5):
             global cursor_show
@@ -399,11 +366,7 @@ class Example(QWidget):
                     cursor_show = False
                     app.setOverrideCursor(Qt.BlankCursor)
 
-        gui_objects = {}
-        gui_layouts = {}
-        sshFile = str(script_path) + "/qt-gui.stylesheet"
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
+        #----------- switch to other service ----------------------------------#
 
         def switch_active_service(new_service, transmit=False):
             global play_status
@@ -421,6 +384,8 @@ class Example(QWidget):
             else:
                 gui_objects['playpause']['object'].setText(u'\uF3AA')
                 play_status = False
+
+        #------------- create a GUI element -----------------------------------#
 
         def create_gui_object(name,type,group=None,param_1=None,param_2=None,param_3=None):
             label_size = 1500
@@ -485,18 +450,22 @@ class Example(QWidget):
             gui_object['default'] = 'show'
             gui_objects[name] = gui_object
 
+        #------------ create VBox for metadata --------------------------------#
+
         def setup_metadata_gui_elements():
             vbox_metadata = QVBoxLayout()
             vbox_metadata.setSpacing(0)
             vbox_metadata.addStretch(1)
-            create_gui_object('title_label','QLabel_bold','metadata')
-            vbox_metadata.addWidget(gui_objects['title_label']['object'])
+            create_gui_object('track_label','QLabel_bold','metadata')
+            vbox_metadata.addWidget(gui_objects['track_label']['object'])
             create_gui_object('artist_label','QLabel_normal','metadata')
             vbox_metadata.addWidget(gui_objects['artist_label']['object'])
             create_gui_object('album_label','QLabel_normal','metadata')
             vbox_metadata.addWidget(gui_objects['album_label']['object'])
             vbox_metadata.addStretch(1)
             gui_layouts['vbox_metadata'] = vbox_metadata
+
+        #------------- create VBox for service icons --------------------------#
 
         def setup_service_icon_gui_elements():
             vbox_service_icons = QVBoxLayout()
@@ -524,6 +493,8 @@ class Example(QWidget):
             vbox_service_icons.addStretch(1)
             gui_layouts['vbox_service_icons'] = vbox_service_icons
 
+        #------------------ create on screen control HBox ---------------------#
+
         def setup_playback_controls_gui_elements():
             hbox_playback_controls = QHBoxLayout()
             hbox_playback_controls.setSpacing(263)
@@ -542,6 +513,8 @@ class Example(QWidget):
             hbox_playback_controls.addWidget(gui_objects['next']['object'])
             hbox_playback_controls.addStretch(1)
             gui_layouts['hbox_playback_controls'] = hbox_playback_controls
+
+        #-------------- create the overall screen layout ----------------------#
 
         def setup_screen_layout():
             create_gui_object('cover','QLabel_cover','cover')
@@ -569,6 +542,15 @@ class Example(QWidget):
             gui_layouts['all'].addLayout(gui_layouts['vbox_central'])
             gui_layouts['all'].addStretch(1)
 
+        #---------- do some stuff at the beginning ----------------------------#
+
+        gui_objects = {}
+        gui_layouts = {}
+        gui_amimations = {}
+        sshFile = str(script_path) + "/qt-gui.stylesheet"
+        with open(sshFile,"r") as fh:
+            self.setStyleSheet(fh.read())
+
         setup_metadata_gui_elements()
         setup_service_icon_gui_elements()
         setup_playback_controls_gui_elements()
@@ -590,6 +572,9 @@ class Example(QWidget):
         self.timer2.start(20)
         self.show()
 
+#------------------------------------------------------------------------------#
+#                main programm                                                 #
+#------------------------------------------------------------------------------#
 
 if __name__ == '__main__':
 
@@ -598,6 +583,9 @@ if __name__ == '__main__':
     init()
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    #app.setOverrideCursor(Qt.BlankCursor)
-    ex = Example()
+    screen_resolution = app.desktop().screenGeometry()
+    width, height = screen_resolution.width(), screen_resolution.height()
+    print('geometry:', width, height)
+    app.setOverrideCursor(Qt.BlankCursor)
+    QTGui()
     sys.exit(app.exec_())
