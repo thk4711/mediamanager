@@ -34,15 +34,21 @@ def init():
 #-----------------------------------------------------------------#
 def button_pressed_callback(channel):
     global count
+    global last_port
     now = pcf.port
     count = 0
     for io in now:
         if io != last_port[count]:
             if io == False:
-                action = config['actions'][str(count)]
-                common.get_data(host,port, action)
+                if str(count) in config['actions']:
+                    action = config['actions'][str(count)]
+                    common.get_data(host,port, action)
+                else:
+                    print(f'no action defined for pfc button {count}')
             last_port[count] = port
         count = count + 1
+    pcf.port  = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    last_port = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
 #-----------------------------------------------------------------#
 #                main loop                                        #

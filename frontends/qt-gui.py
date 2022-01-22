@@ -110,13 +110,20 @@ def run_control_watch():
     except:
         print("Error: unable to start thread control watch")
 
-#---------- scale a screen coordinate to actual screen dimension --------------#
-def scale(what, value):
-    if what == 'x':
-        return int(value * screen_width / 100)
-    if what == 'y':
-        return int(value * screen_height / 100)
-    return 1
+#----------------- calculate dimensions based on config file ------------------#
+def get_dimensions():
+    global dimensions
+    dimensions = {}
+    for item in config['dimensions']:
+        what, value_sting = config['dimensions'][item].split(':', 1)
+        value = int(value_sting)
+        if what == 'x':
+            dimensions[item] = int(value * screen_width / 1000)
+        if what == 'y':
+            dimensions[item] = int(value * screen_height / 1000)
+    for item in dimensions:
+        print(item, dimensions[item])
+
 
 #-------------------- define some GUI elements --------------------------------#
 
@@ -160,14 +167,14 @@ class MediaManagerGUI(QWidget):
 
     #---------------------- init the UI ---------------------------------------#
     def initUI(self):
+        get_dimensions()
         palette = self.palette()
         role = self.backgroundRole()
         palette.setColor(role, QColor('black'))
         self.setPalette(palette)
-        cover_size = scale('x', 25)
         self.setMouseTracking(True)
         self.mouseMoveEvent=lambda event:hide_and_show_stuff('switch', 'cursor', 2)
-        pixmap_1 = QPixmap('images/pause.png').scaled(cover_size, cover_size, Qt.KeepAspectRatio)
+        pixmap_1 = QPixmap('images/pause.png').scaled(dimensions['cover_art_size'], dimensions['cover_art_size'], Qt.KeepAspectRatio)
         QFontDatabase.addApplicationFont("fonts/Roboto-Condensed-Light.ttf")
         QFontDatabase.addApplicationFont("fonts/Material-Design-Iconic-Font.ttf")
         QFontDatabase.addApplicationFont("fonts/socialicious.ttf")
@@ -196,9 +203,9 @@ class MediaManagerGUI(QWidget):
                 if 'external_' in new_image:
                     data = common.get_data(host,port,'coverimage/cover=' + new_image)
                     tmp_pic.loadFromData(data)
-                    new_pixmap = tmp_pic.scaled(cover_size, cover_size, Qt.KeepAspectRatio)
+                    new_pixmap = tmp_pic.scaled(dimensions['cover_art_size'], dimensions['cover_art_size'], Qt.KeepAspectRatio)
                 else:
-                    new_pixmap = QPixmap(new_image).scaled(cover_size, cover_size, Qt.KeepAspectRatio)
+                    new_pixmap = QPixmap(new_image).scaled(dimensions['cover_art_size'], dimensions['cover_art_size'], Qt.KeepAspectRatio)
             if meta_data['playstatus']:
                 gui_objects['placeholder']['object'].hide()
             else:
@@ -246,10 +253,10 @@ class MediaManagerGUI(QWidget):
                 play_status = False
                 if service_list[meta_data['service']]['type'] == 'font':
                     symbol = service_list[meta_data['service']]['symbol'].encode().decode('unicode-escape')
-                    cover = create_pixmap_from_font(cover_size, cover_size, symbol, int(0.8*cover_size))
+                    cover = create_pixmap_from_font(dimensions['cover_art_size'], dimensions['cover_art_size'], symbol, int(0.8*dimensions['cover_art_size']))
                     exchange_pixmap(gui_objects['cover']['object'], cover, True)
                 elif service_list[meta_data['service']]['type'] == 'svg':
-                    cover = QIcon('frontends/icons/' + service_list[meta_data['service']]['icon1']).pixmap(QSize(cover_size, cover_size))
+                    cover = QIcon('frontends/icons/' + service_list[meta_data['service']]['icon1']).pixmap(QSize(dimensions['cover_art_size'], dimensions['cover_art_size']))
                     exchange_pixmap(gui_objects['cover']['object'], cover, True)
 
         #---------------------- update time -----------------------------------#
@@ -369,45 +376,37 @@ class MediaManagerGUI(QWidget):
 
         #------------- create a GUI element -----------------------------------#
         def create_gui_object(name,type,group=None,param_1=None,param_2=None,param_3=None):
-            label_size = scale('x',75)
-            font_size = scale('y',4)
-            icon_size = scale('x',3)
 
             gui_object = {}
 
             if type == 'QLabel_bold':
                 gui_object['object'] = QLabel_b('')
-                gui_object['object'].setMaximumWidth(label_size)
-                gui_object['object'].setStyleSheet(f'font-size: {font_size}px;')
+                gui_object['object'].setMaximumWidth(dimensions['metadata_text_length'])
+                gui_object['object'].setStyleSheet(f'font-size: {dimensions["metadata_font_size"]}px;')
 
             elif type == 'QLabel_normal':
                 gui_object['object'] = QLabel('')
-                gui_object['object'].setMaximumWidth(label_size)
-                gui_object['object'].setStyleSheet(f'font-size: {font_size}px;')
+                gui_object['object'].setMaximumWidth(dimensions['metadata_text_length'])
+                gui_object['object'].setStyleSheet(f'font-size: {dimensions["metadata_font_size"]}px;')
 
             elif type == 'Push_Button':
-                pb_width  = scale('x',6)
-                pb_height = scale('x',3)
-                pb_font_size = scale('y',4)
                 gui_object['object'] = MyPushButton(param_1)
-                style = f'font-size: {pb_font_size}px; min-width: {pb_width}px; min-height: {pb_height}px; max-width: {pb_width}px; max-height: {pb_height}px;'
+                style = f'font-size: {dimensions["control_button_font_size"]}px; min-width: {dimensions["control_button_width"]}px; min-height: {dimensions["control_button_height"]}px; max-width: {dimensions["control_button_width"]}px; max-height: {dimensions["control_button_height"]}px;'
                 gui_object['object'].setStyleSheet(style)
 
             elif type == 'Service_icon_font':
-                icon_font_size = scale('y',4.5)
-                padding = scale('x',0.3)
                 symbol = param_1.encode().decode('unicode-escape')
                 gui_objects[name + 'img1'] = {}
                 gui_objects[name + 'img1']['object'] = MyQLabelInactive(symbol)
-                gui_objects[name + 'img1']['object'].setStyleSheet(f'min-width: {icon_size}px; min-height: {icon_size}px; max-width: {icon_size}px; max-height: {icon_size}px;')
-                gui_objects[name + 'img1']['object'].setStyleSheet(f'font-size: {icon_font_size}px; padding-left: {padding}px;')
+                gui_objects[name + 'img1']['object'].setStyleSheet(f'min-width: {dimensions["service_icon_size"]}px; min-height: {dimensions["service_icon_size"]}px; max-width: {dimensions["service_icon_size"]}px; max-height: {dimensions["service_icon_size"]}px;')
+                gui_objects[name + 'img1']['object'].setStyleSheet(f'font-size: {dimensions["service_icon_font_size"]}px; padding-left: {dimensions["service_icon_padding"]}px;')
                 gui_objects[name + 'img2'] = {}
                 gui_objects[name + 'img2']['object'] = MyQLabelActive(symbol)
-                gui_objects[name + 'img2']['object'].setStyleSheet(f'min-width: {icon_size}px; min-height: {icon_size}px; max-width: {icon_size}px; max-height: {icon_size}px;')
-                gui_objects[name + 'img2']['object'].setStyleSheet(f'font-size: {icon_font_size}px; padding-left: {padding}px;')
+                gui_objects[name + 'img2']['object'].setStyleSheet(f'min-width: {dimensions["service_icon_size"]}px; min-height: {dimensions["service_icon_size"]}px; max-width: {dimensions["service_icon_size"]}px; max-height: {dimensions["service_icon_size"]}px;')
+                gui_objects[name + 'img2']['object'].setStyleSheet(f'font-size: {dimensions["service_icon_font_size"]}px; padding-left: {dimensions["service_icon_padding"]}px;')
                 gui_objects[name + 'img3'] = {}
                 gui_objects[name + 'img3']['object'] = MyQLabelActive(' ')
-                gui_objects[name + 'img3']['object'].setStyleSheet(f'min-width: {icon_size}px; min-height: {icon_size}px; max-width: {icon_size}px; max-height: {icon_size}px;')
+                gui_objects[name + 'img3']['object'].setStyleSheet(f'min-width: {dimensions["service_icon_size"]}px; min-height: {dimensions["service_icon_size"]}px; max-width: {dimensions["service_icon_size"]}px; max-height: {dimensions["service_icon_size"]}px;')
                 gui_object['object'] = MyStack()
                 gui_object['object'].addWidget(gui_objects[name + 'img1']['object'])
                 gui_object['object'].addWidget(gui_objects[name + 'img2']['object'])
@@ -419,13 +418,13 @@ class MediaManagerGUI(QWidget):
             elif type == 'Service_icon_svg':
                 gui_objects[name + 'img1'] = {}
                 gui_objects[name + 'img1']['object'] = MyQSvgWidget('frontends/icons/' + param_1)
-                gui_objects[name + 'img1']['object'].setStyleSheet(f'min-width: {icon_size}px; min-height: {icon_size}px; max-width: {icon_size}px; max-height: {icon_size}px;')
+                gui_objects[name + 'img1']['object'].setStyleSheet(f'min-width: {dimensions["service_icon_size"]}px; min-height: {dimensions["service_icon_size"]}px; max-width: {dimensions["service_icon_size"]}px; max-height: {dimensions["service_icon_size"]}px;')
                 gui_objects[name + 'img2'] = {}
                 gui_objects[name + 'img2']['object'] = MyQSvgWidget('frontends/icons/' + param_2)
-                gui_objects[name + 'img2']['object'].setStyleSheet(f'min-width: {icon_size}px; min-height: {icon_size}px; max-width: {icon_size}px; max-height: {icon_size}px;')
+                gui_objects[name + 'img2']['object'].setStyleSheet(f'min-width: {dimensions["service_icon_size"]}px; min-height: {dimensions["service_icon_size"]}px; max-width: {dimensions["service_icon_size"]}px; max-height: {dimensions["service_icon_size"]}px;')
                 gui_objects[name + 'img3'] = {}
                 gui_objects[name + 'img3']['object'] = MyQLabelActive(' ')
-                gui_objects[name + 'img3']['object'].setStyleSheet(f'min-width: {icon_size}px; min-height: {icon_size}px; max-width: {icon_size}px; max-height: {icon_size}px;')
+                gui_objects[name + 'img3']['object'].setStyleSheet(f'min-width: {dimensions["service_icon_size"]}px; min-height: {dimensions["service_icon_size"]}px; max-width: {dimensions["service_icon_size"]}px; max-height: {dimensions["service_icon_size"]}px;')
                 gui_object['object'] = MyStack()
                 gui_object['object'].addWidget(gui_objects[name + 'img1']['object'])
                 gui_object['object'].addWidget(gui_objects[name + 'img2']['object'])
@@ -434,16 +433,12 @@ class MediaManagerGUI(QWidget):
 
             elif type == 'QLabel_cover':
                 gui_object['object'] = QLabel('')
-                gui_object['object'].setFixedSize(cover_size, cover_size)
+                gui_object['object'].setFixedSize(dimensions['cover_art_size'], dimensions['cover_art_size'])
 
             elif type == 'QLabel_volume':
-                hight = scale('y',27)
-                width = scale('x',26)
-                font_size = int(0.9*hight)
-                space = int(0.5*width)
                 gui_object['object'] = MyQLabelVolume('')
-                gui_object['object'].setStyleSheet(f'min-width: {width}px; min-height: {hight}px; max-width: {width}px; max-height: {hight}px; font-size: 290px; margin-left: 250px;')
-                gui_object['object'].setStyleSheet(f'font-size: {font_size}px; margin-left: {space}px;')
+                gui_object['object'].setStyleSheet(f'min-width: {dimensions["volume_text_width"]}px; min-height: {dimensions["volume_text_hight"]}px; max-width: {dimensions["volume_text_width"]}px; max-height: {dimensions["volume_text_hight"]}px')
+                gui_object['object'].setStyleSheet(f'font-size: {dimensions["volume_text_font_size"]}px; margin-left: {dimensions["volume_text_left_margin"]}px;')
                 gui_object['object'].hide
 
             gui_object['group'] = group
@@ -476,7 +471,12 @@ class MediaManagerGUI(QWidget):
             elif orientation == 'H':
                 box_service_icons = QHBoxLayout()
                 print('creating HBox')
-            box_service_icons.setContentsMargins(20, 0, 0, 0)
+            #box_service_icons.setContentsMargins(dimensions["service_icon_spacing"], 0, 0, 0)
+            if orientation == 'V':
+                box_service_icons.setContentsMargins(dimensions["service_icon_margin"], 0, 0, 0)
+            if orientation == 'H':
+                box_service_icons.setContentsMargins(0, 0, dimensions["service_icon_margin"], 0)
+            box_service_icons.setSpacing(dimensions["service_icon_spacing"])
             box_service_icons.addStretch(1)
             global service_array
             service_array = []
@@ -488,8 +488,6 @@ class MediaManagerGUI(QWidget):
                 elif service_list[service]['type'] == 'svg':
                     create_gui_object(service, 'Service_icon_svg', 'service_icons', service_list[service]['icon1'], service_list[service]['icon2'])
                 box_service_icons.addWidget(gui_objects[service]['object'])
-                if orientation == 'H':
-                    gui_objects[service]['object'].setContentsMargins(20, 0, 20, 0)
                 if count == 0: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[0], True))
                 if count == 1: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[1], True))
                 if count == 2: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[2], True))
@@ -498,19 +496,18 @@ class MediaManagerGUI(QWidget):
                 if count == 5: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[5], True))
                 if count == 6: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[6], True))
                 if count == 7: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[7], True))
+                if count == 8: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[7], True))
+                if count == 9: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[7], True))
+                if count == 10: gui_objects[service]['object'].clicked.connect(lambda : switch_active_service(service_array[7], True))
                 count = count + 1
             box_service_icons.addStretch(1)
             gui_layouts['box_service_icons'] = box_service_icons
 
         #------------------ create on screen control HBox ---------------------#
         def setup_playback_controls_gui_elements():
-            width  = scale('x',6)
-            height = scale('x',2)
-            space = scale('x',12)
-            font_size = scale('y',3)
             box_playback_controls = QHBoxLayout()
-            box_playback_controls.setSpacing(space)
-            box_playback_controls.setContentsMargins(space, 0, 0, 0)
+            box_playback_controls.setSpacing(dimensions["control_button_spacing"])
+            box_playback_controls.setContentsMargins(dimensions["control_buttons_margin_left"], 0, 0, dimensions["control_buttons_margin_bottom"])
             create_gui_object('mode','Push_Button','playback_controls', 'Mode')
             gui_objects['mode']['object'].clicked.connect(lambda: common.get_data(host,port,'shift'))
             box_playback_controls.addWidget(gui_objects['mode']['object'])
@@ -528,7 +525,6 @@ class MediaManagerGUI(QWidget):
 
         #-------------- create the overall screen layout ----------------------#
         def setup_screen_layout():
-            space = scale('x',1.7)
             create_gui_object('cover','QLabel_cover','cover')
             create_gui_object('placeholder','QLabel_cover','cover')
             gui_objects['placeholder']['object'].hide()
@@ -536,7 +532,7 @@ class MediaManagerGUI(QWidget):
             gui_objects['vol_label']['default'] = 'hide'
 
             gui_layouts['hbox_middle'] = QHBoxLayout()
-            gui_layouts['hbox_middle'].setSpacing(space)
+            gui_layouts['hbox_middle'].setSpacing(dimensions["middle_element_spacing"])
             gui_layouts['hbox_middle'].addWidget(gui_objects['placeholder']['object'])
             gui_layouts['hbox_middle'].addWidget(gui_objects['cover']['object'])
             gui_layouts['hbox_middle'].addLayout(gui_layouts['vbox_metadata'])
@@ -555,7 +551,7 @@ class MediaManagerGUI(QWidget):
             # main layout
             gui_layouts['all'] = QHBoxLayout()
             if config['general']['service-button-orientation'] == 'horizontal':
-                gui_layouts['all'].setSpacing(space)
+                gui_layouts['all'].setSpacing(dimensions["middle_element_spacing"])
                 gui_layouts['all'].addLayout(gui_layouts['box_service_icons'])
             gui_layouts['all'].addLayout(gui_layouts['vbox_central'])
             if config['general']['service-button-orientation'] == 'horizontal':
