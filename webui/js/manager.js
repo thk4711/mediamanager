@@ -9,9 +9,17 @@ $(document).ready(function()
 
   $('#service').on('click', function(){
         $.get("/shift", function(data){console.log('shift');});
-    }); 
+    });
 
   $('#playpause').on('click', function(){
+        $.get("/toggle", function(data){
+          var button_text = $('#playpause').text();
+          if ( button_text == 'Play') { $("#playpause").html("Pause"); };
+          if ( button_text == 'Pause') { $("#playpause").html("Play"); };
+        });
+    });
+
+  $('#cover').on('click', function(){
         $.get("/toggle", function(data){
           var button_text = $('#playpause').text();
           if ( button_text == 'Play') { $("#playpause").html("Pause"); };
@@ -25,6 +33,16 @@ $(document).ready(function()
 
   $.getJSON('/configdata', function(configdata) {
     start_socket(configdata['web_socket_port']);
+    });
+
+  document.addEventListener('swiped-left', function(e) {
+    //console.log(e.target); // the element that was swiped
+    $.get("/next", function(data){console.log('next');});
+    });
+
+  document.addEventListener('swiped-right', function(e) {
+    //console.log(e.target); // the element that was swiped
+    $.get("/prev", function(data){console.log('prev');});
     });
   //setInterval(function() {
   //  $.getJSON('/metadata', function(metadata) { update_metadata(metadata); });
