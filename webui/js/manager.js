@@ -7,6 +7,10 @@ $(document).ready(function()
         $.get("/prev", function(data){console.log('prev');});
     });
 
+  $('#service').on('click', function(){
+        $.get("/shift", function(data){console.log('shift');});
+    }); 
+
   $('#playpause').on('click', function(){
         $.get("/toggle", function(data){
           var button_text = $('#playpause').text();

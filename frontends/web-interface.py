@@ -80,7 +80,7 @@ def respond_to_get_request(path):
     global active_output
     if path == '/':
         path = '/index.html'
-    if path in '/next/prev/play/pause/toggle':
+    if path in '/next/prev/play/pause/toggle/shift':
         str = path.replace('/','')
         common.get_data(host, port, str)
     elif '/coverimage/' in path:
