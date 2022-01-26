@@ -9,8 +9,9 @@ def init():
              'coax':    { 4:False, 17:False, 22:False, 27:True },
              'toslink': { 4:False, 17:False, 22:True, 27:False },
              'usb':     { 4:True, 17:False, 22:False, 27:False },
-             'aux':     { 4:False, 17:True, 22:False, 27:False }
-             }
+	         'aux':     { 4:True, 17:True, 22:False, 27:False }
+	         }
+
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(4, GPIO.OUT)

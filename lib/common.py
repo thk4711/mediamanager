@@ -201,7 +201,6 @@ def check_smbus(device_address, bus_number = 1):
     try:
         bus = smbus.SMBus(bus_number)
         bus.write_byte(device_address, 0)
-        print("Found {0}".format(hex(device_address)))
     except:
         print(f'unable to fine i2c device {hex(device_address)} on bus {bus_number}')
         exit(1)

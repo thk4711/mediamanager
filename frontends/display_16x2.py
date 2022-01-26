@@ -57,11 +57,16 @@ def init():
 #------------------------------------------------------------------------------#
 def update_metadata():
     global meta_data
-    str_data = common.get_data(host,port,'metadata')
-    data = json.loads(str_data.decode('utf-8'))
-    meta_data['track']  = data['track']
-    meta_data['playstatus']  = data['playstatus']
-    meta_data['service']  = data['service']
+    try:
+        str_data = common.get_data(host,port,'metadata')
+        data = json.loads(str_data.decode('utf-8'))
+        meta_data['track']  = data['track']
+        meta_data['playstatus']  = data['playstatus']
+        meta_data['service']  = data['service']
+    except:
+        meta_data['track']  = ''
+        meta_data['playstatus']  = False
+        meta_data['service']  = 'unknown'
 
 #------------------------------------------------------------------------------#
 #   return string with is in the middle of a line                              #
@@ -130,9 +135,9 @@ def update_display():
 init()
 count = 0
 while True:
-    if count > 3:
+    if count > 10:
         update_metadata()
         count = 0
     count = count + 1
-    time.sleep(0.2)
+    time.sleep(0.1)
     update_display()

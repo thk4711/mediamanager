@@ -31,17 +31,14 @@ def init():
     parser.add_argument('-p', '--port', type=int, help='WEB server port', required=True)
     args = parser.parse_args()
     port = args.port
-    return_code = subprocess.call("echo 'discoverable on\nquit' | /usr/bin/bluetoothctl", shell=True)
+    return_code = subprocess.call("echo 'discoverable on\nquit' | /usr/bin/bluetoothctl > /dev/null 2>&1", shell=True)
 
 #------------------------------------------------------------------------------#
 #        start plugin                                                          #
 #------------------------------------------------------------------------------#
 def module_start():
-    print('STARTING')
-    #return
     return_code = subprocess.call("/bin/systemctl restart bluetooth.service > /dev/null 2>&1", shell=True)
-    return_code = subprocess.call("echo 'power on\nquit' | /usr/bin/bluetoothctl", shell=True)
-    #return_code = subprocess.call("/bin/systemctl start bluetooth.service > /dev/null 2>&1", shell=True)
+    return_code = subprocess.call("echo 'power on\nquit' | /usr/bin/bluetoothctl > /dev/null 2>&1", shell=True)
 
 #------------------------------------------------------------------------------#
 #        stop plugin                                                           #

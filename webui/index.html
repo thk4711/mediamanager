@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mediamanager</title>
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/manager.js"></script>
+    </head>
+    <body>
+        <style type="text/css">
+          .img-diff { width: 150px; height:150px; display: block; margin-left: auto; margin-right: auto;}
+          .cover-img { width: 100%; height: 100%; object-fit: contain; }
+          .tg2 {margin-top: 15px;}
+          .tg  {border-collapse:collapse;border-spacing:2;}
+          .tg td{border-color:black;border-style:solid;border-width:0px;font-family:Arial, sans-serif;font-size:14px;
+            overflow:hidden;padding:0px 0px;word-break:normal;}
+          .tg th{border-color:black;border-style:solid;border-width:0px;font-family:Arial, sans-serif;font-size:14px;
+            font-weight:normal;overflow:hidden;padding:0px 0px;word-break:normal;}
+          .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+          .tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+        </style>
+          <table class="tg">
+            <tbody>
+              <tr>
+                <td class="tg-7btt"><div id="service">unknown</div></td>
+              </tr>
+              <tr>
+                <td class="tg-c3ow">
+                  <div class="img-diff">
+                    <img class="cover-img" id="cover" src="/coverimage/images/pause.png" alt="Coverart">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="tg-7btt"><div id="title">Title</div></td>
+              </tr>
+              <tr>
+                <td class="tg-c3ow"><div id="artist">Artist</div></td>
+              </tr>
+              <tr>
+                <td class="tg-c3ow"><div id="album">Album</div></td>
+              </tr>
+              <tr>
+                <td class="tg-c3ow">
+                  <table align="center" class="tg2">
+                    <tr>
+                      <td><button id="prev">Prev</button></td>
+                      <td><button id="playpause">Play</button></td>
+                      <td><button id="next">Next</button></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+    </body>
+</html>

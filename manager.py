@@ -11,7 +11,6 @@ import psutil
 import select
 import subprocess
 import lib.common as common
-import lib.es9038q2m as hardware
 import _thread
 import pprint
 import pathlib
@@ -24,11 +23,17 @@ def init():
     global active_service
     global volume
     global startport
+    global hardware
+    global hardware_usage
     script_path = str(pathlib.Path(__file__).parent.absolute())
     volume=0
     config = common.read_config(script_path + '/manager.conf')
-    #pprint.pprint(config)
-    #exit()
+    startport = config['global']['startport']
+    code = f'import lib.{config["global"]["hardware"]} as hardware'
+    exec(code, globals())
+    hardware.init()
+    hardware_usage = hardware.hwinfo()
+    pprint.pprint(hardware_usage)
     mixers = alsaaudio.mixers()
     if config['global']['mixer'] in mixers:
         print(f"Using mixer: {config['global']['mixer']}")
@@ -38,19 +43,15 @@ def init():
         for mixer in mixers:
             print(f'  -{mixer}')
         exit(1)
-    startport = config['global']['startport']
+    mixer = alsaaudio.Mixer(config['global']['mixer'])
     process_config(config)
-    #pprint.pprint(service_list)
-    #exit()
     check_if_running()
     start_processes()
     run_check_processes()
     active_service = config['global']['startupservice']
-    mixer = alsaaudio.Mixer(config['global']['mixer'])
+    hardware.switch_mode(active_service)
     run_volume_watch()
     run_detect_active_service()
-    hardware.init()
-    hardware.switch_mode(active_service)
 
 #------------------------------------------------------------------------------#
 #        process config file                                                   #

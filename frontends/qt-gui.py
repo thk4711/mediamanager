@@ -121,9 +121,6 @@ def get_dimensions():
             dimensions[item] = int(value * screen_width / 1000)
         if what == 'y':
             dimensions[item] = int(value * screen_height / 1000)
-    for item in dimensions:
-        print(item, dimensions[item])
-
 
 #-------------------- define some GUI elements --------------------------------#
 
@@ -467,14 +464,9 @@ class MediaManagerGUI(QWidget):
             box_service_icons = None
             if orientation == 'V':
                 box_service_icons = QVBoxLayout()
-                print('creating VBox')
+                box_service_icons.setContentsMargins(dimensions["service_icon_margin"], 0, 0, 0)
             elif orientation == 'H':
                 box_service_icons = QHBoxLayout()
-                print('creating HBox')
-            #box_service_icons.setContentsMargins(dimensions["service_icon_spacing"], 0, 0, 0)
-            if orientation == 'V':
-                box_service_icons.setContentsMargins(dimensions["service_icon_margin"], 0, 0, 0)
-            if orientation == 'H':
                 box_service_icons.setContentsMargins(0, 0, dimensions["service_icon_margin"], 0)
             box_service_icons.setSpacing(dimensions["service_icon_spacing"])
             box_service_icons.addStretch(1)
@@ -582,7 +574,7 @@ class MediaManagerGUI(QWidget):
         self.setLayout(gui_layouts['all'])
         self.timer = QTimer()
         self.timer.timeout.connect(update_metadata)
-        self.timer.start(2000)
+        self.timer.start(1000)
 
         self.timer2 = QTimer()
         self.timer2.timeout.connect(update_volume)
@@ -601,7 +593,7 @@ if __name__ == '__main__':
     MediaManager.setStyle('Fusion')
     screen_resolution = MediaManager.desktop().screenGeometry()
     screen_width, screen_height = screen_resolution.width(), screen_resolution.height()
-    print('geometry:', screen_width, screen_height)
+    #print('geometry:', screen_width, screen_height)
     MediaManager.setOverrideCursor(Qt.BlankCursor)
     MediaManagerGUI()
     sys.exit(MediaManager.exec_())

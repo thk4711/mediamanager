@@ -60,7 +60,7 @@ def handle_encoder():
                 common.volume = 0
             common.mixer.setvolume(common.volume)
         clkLastState = clkState
-        time.sleep(0.003)
+        time.sleep(0.004)
 
 #------------------------------------------------------------------------------#
 #                       handle http get request                                #
