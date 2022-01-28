@@ -22,7 +22,7 @@ def init():
              'usb':     { 4: True,  17: False },
 	         'aux':     { 4: True,  17: True }}
 
-    open_audio_device = {'default': False, 'aux': True }
+    open_audio_device = {'default': False, 'aux': True, 'usb': True}
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(hardware['GPIO']['I2S switch pin 1'], GPIO.OUT)

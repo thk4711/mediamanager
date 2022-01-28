@@ -1,34 +1,36 @@
+var old_volume = 0
+
 //----------------------------------------------------------------------------//
 //                      what to do when page is loaded                        //
 //----------------------------------------------------------------------------//
 $(document).ready(function()
   {
   $('#prev').on('click', function(){
-        $.get("/prev", function(data){console.log('prev');});
+        $.get("/prev", function(data){});
     });
 
   $('#service').on('click', function(){
-        $.get("/shift", function(data){console.log('shift');});
+        $.get("/shift", function(data){});
     });
 
   $('#playpause').on('click', function(){
         $.get("/toggle", function(data){
           var button_text = $('#playpause').text();
-          if ( button_text == 'Play') { $("#playpause").html("Pause"); };
-          if ( button_text == 'Pause') { $("#playpause").html("Play"); };
+          if ( button_text == 'Play') { $("#playpausetext").html("pause"); };
+          if ( button_text == 'Pause') { $("#playpausetext").html("pause"); };
         });
     });
 
   $('#cover').on('click', function(){
         $.get("/toggle", function(data){
           var button_text = $('#playpause').text();
-          if ( button_text == 'Play') { $("#playpause").html("Pause"); };
-          if ( button_text == 'Pause') { $("#playpause").html("Play"); };
+          if ( button_text == 'Play') { $("#playpausetext").html("pause"); };
+          if ( button_text == 'Pause') { $("#playpausetext").html("pause"); };
         });
     });
 
   $('#next').on('click', function(){
-        $.get("/next", function(data){console.log('next');});
+        $.get("/next", function(data){});
     });
 
   $.getJSON('/configdata', function(configdata) {
@@ -36,17 +38,19 @@ $(document).ready(function()
     });
 
   document.addEventListener('swiped-left', function(e) {
-    //console.log(e.target); // the element that was swiped
-    $.get("/next", function(data){console.log('next');});
+    $.get("/next", function(data){});
     });
 
   document.addEventListener('swiped-right', function(e) {
-    //console.log(e.target); // the element that was swiped
-    $.get("/prev", function(data){console.log('prev');});
+    $.get("/prev", function(data){});
     });
-  //setInterval(function() {
-  //  $.getJSON('/metadata', function(metadata) { update_metadata(metadata); });
-  //  }, 1000);
+
+  create_my_slider();
+  slider = document.getElementById('volume');
+  slider.noUiSlider.on('change', function(){
+    var url = "/volume=" + slider.noUiSlider.get();
+    $.get(url, function(data){});
+  });
 });
 
 //----------------------------------------------------------------------------//
@@ -58,9 +62,35 @@ function update_metadata(data){
     $("#artist").text(data['artist']);
     $("#album").text(data['album']);
     $("#cover").attr("src",'/coverimage/' + data['cover']);
-    if ( data['playstatus'] == true) { $("#playpause").html("Pause"); };
-    if ( data['playstatus'] == false) { $("#playpause").html("Play"); };
+    if ( data['playstatus'] == true) { $("#playpausetext").html("pause"); };
+    if ( data['playstatus'] == false) { $("#playpausetext").html("play_arrow"); };
+    slider = document.getElementById('volume');
+    if (data['volume'] != 0) {
+      slider.noUiSlider.set(data['volume']);
+      }
     }
+
+//----------------------------------------------------------------------------//
+//                   create volume slider                                     //
+//----------------------------------------------------------------------------//
+function create_my_slider(){
+  var slider = document.getElementById('volume');
+  noUiSlider.create(slider, {
+      start: 0,
+      connect: true,
+      range: {
+          'min': 0,
+          'max': 100
+        },
+      step: 1,
+      format: wNumb({
+        decimals: 0
+        }),
+      });
+  document.querySelector('.noUi-tooltip').style.background = 'red';
+  document.querySelector('.noUi-handle').style.background = 'red';
+  }
+
 
 //----------------------------------------------------------------------------//
 //                     start websocket communication                          //

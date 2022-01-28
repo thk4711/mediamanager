@@ -9,6 +9,9 @@ import os
 import json
 from evdev import InputDevice, categorize, ecodes, list_devices
 
+#### enable debug to see IR codes received
+debug = True
+
 #-----------------------------------------------------------------#
 #             do some things at the beginning                     #
 #-----------------------------------------------------------------#
@@ -30,9 +33,12 @@ def init():
 #             translate key code to string                        #
 #-----------------------------------------------------------------#
 def key_code_to_action(code):
+    if config['general']['debug']:
+        print('code: ', code)
     if str(code) in config['buttons']:
         action = config['buttons'][str(code)]
-        #print(action)
+        if config['general']['debug']:
+            print('action:', action)
         if action == 'volume+' : volume_adjust(1)
         elif action == 'volume-' : volume_adjust(-1)
 

@@ -6,56 +6,62 @@
         <meta name="theme-color" content="black">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
         <script src="/js/swiped-events.js"></script>
         <script src="/js/jquery.min.js"></script>
         <script src="/js/manager.js"></script>
+        <script src="/js/nouislider.min.js"></script>
         <!--Import Google Icon Font-->
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link href="/css/icons.css" rel="stylesheet">
         <!--Import materialize.css-->
         <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+        <link href="/css/nouislider.css" rel="stylesheet">
         <!--Let browser know website is optimized for mobile-->
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </head>
-      <body>
-        <style type="text/css">
-          * {background-color: black}
-          .img-diff { width: 250px; height:250px; display: block; margin-left: auto; margin-right: auto;}
-          .cover-img { width: 100%; height: 100%; object-fit: contain; }
-          .my-normal-text { padding: 0 !important; color: white; font-family:Arial, sans-serif;font-size:16px; line-height: 20px}
-          .my-bold-text { padding: 0 !important; color: white; font-family:Arial, sans-serif;font-size:24px;font-weight:bold; line-height: 26px }
-          .footer { position: fixed; left: 0; bottom: 15px; width: 100%; text-align: center; vertical-align: middle;}
-          .top { position: fixed; left: 0; top: 10px; width: 100%; text-align: center; vertical-align: middle;}
-          .waves-effect.waves-brown .waves-ripple { background-color: rgba(121, 85, 72, 0.65); }
+      <body class="black">
+        <style>
+          .top { position: fixed; left: 0; top: 2%; width: 100%;}
+          .footer { position: fixed; bottom: 2%; width: 100%;}
         </style>
+        <main class="top">
         <script type="text/javascript" src="js/materialize.min.js"></script>
-          <div class="top">
-          <table class="centered"}>
-              <tr>
-                <td><div class = "my-bold-text" id="service">unknown</div></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="img-diff">
-                    <img class="cover-img" id="cover" src="/coverimage/images/pause.png" alt="Coverart">
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class = "my-bold-text" id="title">Title</div>
-                  <div class = "my-normal-text" id="artist">Artist</div>
-                  <div class = "my-normal-text"id="album">Album</div>
-                </td>
-          </table>
+        <div class="container">
+          <h5><div class = "white-text center" id="service">unknown</div></h5>
+          <div class="center">
+            <div class="card-panel black" width="50%">
+            <img width="100%" hight="50%" class="responsive-img" id="cover" src="/coverimage/images/pause.png" alt="Coverart"></img>
+            </div>
           </div>
-          <div class = "footer">
-          <table class="centered">
-            <tr>
-              <td><button class="card-panel grey darken-1 waves-effect waves-brown btn" id="prev">Prev</button></td>
-              <td><button class="card-panel grey ldarken-1 waves-effect waves-brown btn" id="playpause">Play</button></td>
-              <td><button class="card-panel grey darken-1 waves-effect waves-brown btn"id="next">Next</button></td>
-            </tr>
-          </table>
+          <h5><div class = "white-text center" id="title">Title</div></h5>
+          <h5><div class = "grey-text center" id="artist">Artist</div></h5>
+          <h5><div class = "grey-text center" id="album">Album</div></h5>
         </div>
+        </main>
+        <footer class="footer">
+          <div class="container">
+            <h1><div class="red-text" id="volume"></div></h1>
+            <div class="row">
+              <div class="col s4 center"><button class="red waves-effect btn-floating btn-large" id="prev"><i class="large material-icons">skip_previous</i></button></div>
+              <div class="col s4 center"><button class="red waves-effect btn-floating btn-large" id="playpause"><i id="playpausetext" class="large material-icons">play_arrow</i></button></div>
+              <div class="col s4 center"><button class="red waves-effect btn-floating btn-large" id="next"><i class="large material-icons">skip_next</i></button></div>
+            </div>
+          </div>
+      </footer>
     </body>
 </html>

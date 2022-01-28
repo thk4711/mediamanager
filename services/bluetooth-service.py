@@ -113,8 +113,6 @@ def get_metadata():
                 meta_data['cover']  = 'images/bluetooth.png'
         except:
             a=1
-    else:
-        print('no metadata')
     return(bytes(json.dumps(meta_data), 'utf-8'))
 
 #------------------------------------------------------------------------------#

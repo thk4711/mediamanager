@@ -35,12 +35,12 @@ def init():
 #           read content of file in bin mode                                   #
 #------------------------------------------------------------------------------#
 def read_bin_file(file_name):
-    print(file_name)
     if os.path.exists(file_name):
         with open(file_name, 'rb') as file:
             data = file.read()
         return(data)
     else:
+        print(file_name, 'not found')
         return(bytes('Not found', 'utf-8'))
 
 #------------------------------------------------------------------------------#
@@ -83,6 +83,11 @@ def respond_to_get_request(path):
     if path in '/next/prev/play/pause/toggle/shift':
         str = path.replace('/','')
         common.get_data(host, port, str)
+    elif '/volume' in path:
+        data = split_path(path)
+        common.volume = int(split_path(path)['volume'])
+        common.mixer.setvolume(common.volume)
+        return(bytes('OK', 'utf-8'))
     elif '/coverimage/' in path:
         data = get_cover_image(path)
         return(data)
@@ -96,6 +101,21 @@ def respond_to_get_request(path):
         file_name = path.lstrip('/')
         return(read_bin_file('webui/' + file_name))
     return(bytes('OK', 'utf-8'))
+
+#------------------------------------------------------------------------------#
+#                       split path                                             #
+#------------------------------------------------------------------------------#
+def split_path(path):
+    path = path[1:]
+    data = {}
+    elements = path.split('/')
+    for element in elements:
+        try:
+            key, value = element.split('=',2)
+            data[key] = value
+        except:
+            pass
+    return(data)
 
 #------------------------------------------------------------------------------#
 #                        get coverimage                                        #
@@ -189,6 +209,7 @@ def run_http():
 #------------------------------------------------------------------------------#
 async def ws_update(vu_socket, path):
     global has_changed
+    count = 0
     while True:
         if has_changed:
             try:
@@ -196,7 +217,16 @@ async def ws_update(vu_socket, path):
                 has_changed = False
             except:
                 pass
-        await asyncio.sleep(0.2)
+        if count > 50:
+            try:
+                await vu_socket.send(json.dumps(metadata))
+                has_changed = False
+                count = 0
+            except:
+                pass
+        else:
+            count = count + 1
+        await asyncio.sleep(0.1)
 
 #------------------------------------------------------------------------------#
 #           run the web socket server                                          #
