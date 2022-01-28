@@ -44,17 +44,15 @@ disable_overscan=1
 
 # Uncomment some or all of these to enable the optional hardware interfaces
 dtparam=i2c_arm=on
-#dtparam=i2s=on
-dtparam=spi=off
+dtparam=spi=on
 
 # Uncomment this to enable infrared communication.
-dtoverlay=gpio-ir,gpio_pin=26
-#dtoverlay=gpio-ir-tx,gpio_pin=18
+dtoverlay=gpio-ir,gpio_pin=23
 
 # Additional overlays and parameters are documented /boot/overlays/README
 
 # Enable audio (loads snd_bcm2835)
-dtparam=audio=on
+ dtparam=audio=on
 
 [pi4]
 # Enable DRM VC4 V3D driver on top of the dispmanx display stack

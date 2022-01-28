@@ -6,10 +6,10 @@ import RPi.GPIO as GPIO
 import lib.common as common
 import argparse
 
-Button_1 = 16
-Button_2 = 13
-Button_3 = 6
-Button_4 = 5
+Button_1 = 12
+Button_2 = 24
+Button_3 = 25
+Button_4 = 22
 
 #-----------------------------------------------------------------#
 #             do some things first                                #
@@ -30,13 +30,10 @@ def init():
     GPIO.add_event_detect(Button_3, GPIO.FALLING, callback=handle_button, bouncetime=600)
     GPIO.add_event_detect(Button_4, GPIO.FALLING, callback=handle_button, bouncetime=600)
 
-    parser = argparse.ArgumentParser(description='handle extra buttons')
-    parser.add_argument('-p', '--port', type=int, help='manager port', required=True)
-    parser.add_argument('-ho', '--host', type=str, help='manager host', required=False, default='localhost')
-    parser.add_argument('-m', '--mixer', type=str, help='volume mixer name', required=False)
-    args = parser.parse_args()
+    args = common.init_frontend()
     port = args.port
     host = args.host
+    config_port = args.configport
 
 #------------------------------------------------------------------------------#
 #           handle button press                                                #
