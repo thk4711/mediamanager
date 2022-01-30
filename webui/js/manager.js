@@ -5,6 +5,10 @@ var old_volume = 0
 //----------------------------------------------------------------------------//
 $(document).ready(function()
   {
+  $('.dropdown-trigger').dropdown({
+      closeOnClick: true // Stops event propagation
+    });
+
   $('#prev').on('click', function(){
         $.get("/prev", function(data){});
     });
@@ -54,10 +58,19 @@ $(document).ready(function()
 });
 
 //----------------------------------------------------------------------------//
+//                    switch active service                                   //
+//----------------------------------------------------------------------------//
+function switch_service(service){
+    var url = '/action=switchservice/service=' + service
+    $.get(url, function(data){});
+    document.getElementById("active_service").innerHTML = "&nbsp&nbsp&nbsp" + service + "&nbsp&nbsp&nbsp";
+    }
+
+//----------------------------------------------------------------------------//
 //                      update metadata elments                               //
 //----------------------------------------------------------------------------//
 function update_metadata(data){
-    $("#service").text(data['service']);
+    document.getElementById("active_service").innerHTML = "&nbsp&nbsp&nbsp" + data['service'] + "&nbsp&nbsp&nbsp";
     $("#title").text(data['track']);
     $("#artist").text(data['artist']);
     $("#album").text(data['album']);

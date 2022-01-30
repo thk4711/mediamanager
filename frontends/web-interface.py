@@ -7,8 +7,6 @@ import websockets
 import json
 import time
 import threading
-#import _thread
-import argparse
 import os
 import pathlib
 import lib.common as common
@@ -24,24 +22,45 @@ def init():
     global host
     global port
     global config
+    global service_list
     script_path = str(pathlib.Path(__file__).parent.absolute())
     config = common.read_config(script_path + '/web-interface.conf')
     args = common.init_frontend()
     port = args.port
     host = args.host
     common.run_control_watch()
+    str_data = common.get_data(host, port,'getservicelist')
+    service_list = json.loads(str_data.decode('utf-8'))
 
 #------------------------------------------------------------------------------#
 #           read content of file in bin mode                                   #
 #------------------------------------------------------------------------------#
 def read_bin_file(file_name):
     if os.path.exists(file_name):
+        if 'index.html' in file_name:
+            return(create_index_html(file_name))
         with open(file_name, 'rb') as file:
             data = file.read()
         return(data)
     else:
         print(file_name, 'not found')
         return(bytes('Not found', 'utf-8'))
+
+#------------------------------------------------------------------------------#
+#           modify index.html based on activated services                      #
+#------------------------------------------------------------------------------#
+def create_index_html(file_name):
+    return_data = ''
+    with open(file_name) as f:
+        content = f.readlines()
+    for line in content:
+        if 'I am a placeholder' in line:
+            for service in service_list:
+                list_item = f'<li><a class="big-font center" href="javascript:switch_service(\'{service}\');">{service}</a></li>\n'
+                return_data = return_data + list_item
+        else:
+            return_data = return_data + line
+    return(bytes(return_data, 'utf-8'))
 
 #------------------------------------------------------------------------------#
 #                       handle http post request                               #
@@ -83,6 +102,8 @@ def respond_to_get_request(path):
     if path in '/next/prev/play/pause/toggle/shift':
         str = path.replace('/','')
         common.get_data(host, port, str)
+    elif 'action=switchservice' in path:
+        common.get_data(host, port, path)
     elif '/volume' in path:
         data = split_path(path)
         common.volume = int(split_path(path)['volume'])

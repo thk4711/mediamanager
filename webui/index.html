@@ -38,11 +38,18 @@
         <style>
           .top { position: fixed; left: 0; top: 2%; width: 100%;}
           .footer { position: fixed; bottom: 2%; width: 100%;}
+          .big-font { color: #a9a7a7 !important; font-size: 23px !important; }
+          .dropdown-content { transform: none !important; }
         </style>
         <main class="top">
         <script type="text/javascript" src="js/materialize.min.js"></script>
         <div class="container">
-          <h5><div class = "white-text center" id="service">unknown</div></h5>
+          <div class="center">
+          <a class='dropdown-trigger big-font black white-text center btn' href='#' data-target='dropdown1'><span id="active_service">Drop Me!</span></a>
+          <ul id='dropdown1' class='dropdown-content black'>
+            <li><a class="big-font center" href="javascript:switch_service('Placeholder');">I am a placeholder</a></li>
+          </ul>
+          </div>
           <div class="center">
             <div class="card-panel black" width="50%">
             <img width="100%" hight="50%" class="responsive-img" id="cover" src="/coverimage/images/pause.png" alt="Coverart"></img>
