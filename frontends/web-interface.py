@@ -120,6 +120,8 @@ def respond_to_get_request(path):
         return(bytes(json.dumps(data), 'utf-8'))
     else:
         file_name = path.lstrip('/')
+        if '..' in file_name:
+            return(bytes('not allowed', 'utf-8'))
         return(read_bin_file('webui/' + file_name))
     return(bytes('OK', 'utf-8'))
 
@@ -238,7 +240,7 @@ async def ws_update(vu_socket, path):
                 has_changed = False
             except:
                 pass
-        if count > 50:
+        if count > 10:
             try:
                 await vu_socket.send(json.dumps(metadata))
                 has_changed = False

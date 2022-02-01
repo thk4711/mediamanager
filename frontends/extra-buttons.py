@@ -2,14 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import time
+import pathlib
 import RPi.GPIO as GPIO
 import lib.common as common
-import argparse
-
-Button_1 = 12
-Button_2 = 24
-Button_3 = 25
-Button_4 = 22
 
 #-----------------------------------------------------------------#
 #             do some things first                                #
@@ -17,34 +12,55 @@ Button_4 = 22
 def init():
     global host
     global port
-
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    GPIO.setup(Button_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(Button_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(Button_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(Button_4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    GPIO.add_event_detect(Button_1, GPIO.FALLING, callback=handle_button, bouncetime=600)
-    GPIO.add_event_detect(Button_2, GPIO.FALLING, callback=handle_button, bouncetime=600)
-    GPIO.add_event_detect(Button_3, GPIO.FALLING, callback=handle_button, bouncetime=600)
-    GPIO.add_event_detect(Button_4, GPIO.FALLING, callback=handle_button, bouncetime=600)
-
+    global config
+    global hardware
+    global config_port
+    script_path = str(pathlib.Path(__file__).parent.absolute())
+    config = common.read_config(script_path + '/extra-buttons.conf')
     args = common.init_frontend()
     port = args.port
     host = args.host
     config_port = args.configport
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    hardware = common.get_hardware_conf(config)
+
+    for item in hardware['GPIO']:
+        if config['general']['debug']:
+            print(f'configuring GPIO {hardware["GPIO"][item]}')
+        GPIO.setup(hardware['GPIO'][item], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.add_event_detect(hardware['GPIO'][item], GPIO.FALLING, callback=handle_button, bouncetime=600)
 
 #------------------------------------------------------------------------------#
 #           handle button press                                                #
 #------------------------------------------------------------------------------#
 def handle_button(pin):
-    index = 1
-    if pin == Button_1: index = common.get_data(host,port,'shift')
-    if pin == Button_2: index = common.get_data(host,port,'prev')
-    if pin == Button_3: index = common.get_data(host,port,'toggle')
-    if pin == Button_4: index = common.get_data(host,port,'next')
+    if config['general']['debug']:
+        print(f'Button GPIO {pin} was pressed')
+    for item in hardware['GPIO']:
+        if pin == hardware['GPIO'][item]:
+            if item in config['actions']:
+                action = config['actions'][item]
+                if config['general']['debug']:
+                    print(f'performing: {action}')
+                common.get_data(host,port, action)
+            else:
+                if config['general']['debug']:
+                    print(f'no action defined for GPIO {pin}')
 
+#------------------------------------------------------------------------------#
+#                       handle http get request                                #
+#------------------------------------------------------------------------------#
+def handler(data):
+    if 'action' not in data:
+        return(bytes('failed', 'utf-8'))
+    if data['action'] == 'hwinfo':
+        return(bytes(json.dumps(hardware), 'utf-8'))
+    return(bytes('OK', 'utf-8'))
+
+#---------------- main script -------------------------------------------------#
 init()
+common.http_get_handler = handler
+common.run_http(config_port)
 while True:
     time.sleep(1000)
